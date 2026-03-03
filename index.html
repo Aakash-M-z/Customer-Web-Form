@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Customer Management & Automation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="styles.css"/>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#2563eb",
+                        "emerald-custom": "#059669",
+                        "background-light": "#f8faff",
+                        "background-dark": "#0f172a",
+                    },
+                    fontFamily: {
+                        "display": ["Public Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+</head>
+<body class="font-display bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 mesh-gradient min-h-screen">
+    <div class="layout-container flex h-full grow flex-col">
+        <!-- Top Navigation -->
+        <header class="premium-header flex items-center justify-between whitespace-nowrap border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md px-6 md:px-10 py-3 sticky top-0 z-50">
+            <div class="flex items-center gap-8">
+                <div class="flex items-center gap-3 text-primary">
+                    <div class="size-8 bg-primary rounded-lg flex items-center justify-center text-white">
+                        <span class="material-symbols-outlined">analytics</span>
+                    </div>
+                    <h2 class="text-slate-900 dark:text-white text-xl font-bold leading-tight tracking-tight">Customer Portal</h2>
+                </div>
+                <div class="hidden lg:flex items-center">
+                    <label class="flex flex-col min-w-64 h-10">
+                        <div class="flex w-full flex-1 items-stretch rounded-xl h-full bg-slate-100 dark:bg-slate-800">
+                            <div class="text-slate-500 flex items-center justify-center pl-4">
+                                <span class="material-symbols-outlined text-[20px]">search</span>
+                            </div>
+                            <input class="form-input flex w-full min-w-0 flex-1 border-none bg-transparent focus:ring-0 text-sm font-normal placeholder:text-slate-500" placeholder="Search customers..."/>
+                        </div>
+                    </label>
+                </div>
+            </div>
+            <div class="flex flex-1 justify-end gap-6 items-center">
+                <nav class="hidden md:flex items-center gap-6">
+                    <a class="text-primary text-sm font-semibold border-b-2 border-primary pb-1" href="#">Dashboard</a>
+                    <a class="text-slate-600 dark:text-slate-400 text-sm font-medium hover:text-primary transition-colors" href="#">Customers</a>
+                    <a class="text-slate-600 dark:text-slate-400 text-sm font-medium hover:text-primary transition-colors" href="#">Automation</a>
+                    <a class="text-slate-600 dark:text-slate-400 text-sm font-medium hover:text-primary transition-colors" href="#">Settings</a>
+                </nav>
+                <div class="flex gap-3">
+                    <button class="relative flex items-center justify-center rounded-xl size-10 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all icon-hover">
+                        <span class="material-symbols-outlined">notifications</span>
+                        <span class="absolute top-2 right-2 size-2 bg-red-500 rounded-full border-2 border-white dark:border-slate-900"></span>
+                    </button>
+                    <div class="h-10 w-[1px] bg-slate-200 dark:bg-slate-800 mx-1"></div>
+                    <div class="flex items-center gap-3 pl-2">
+                        <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border-2 border-primary/20" style='background-image: url("https://ui-avatars.com/api/?name=Admin+User&background=2563eb&color=fff");'></div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="flex-1 px-6 md:px-10 py-8 max-w-[1400px] mx-auto w-full">
+            <!-- Dashboard Header -->
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 animate-fade-in-up stagger-1">
+                <div>
+                    <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Customer Form & Automation</h1>
+                    <p class="text-slate-500 dark:text-slate-400">Manage your customer records and excel automation tasks from a single dashboard.</p>
+                </div>
+                <div class="flex gap-3">
+                    <button class="flex items-center justify-center rounded-xl px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-sm font-bold btn-premium-outline">
+                        <span class="material-symbols-outlined mr-2 text-[20px]">file_download</span> Export
+                    </button>
+                    <button onclick="openCustomerModal()" class="flex items-center justify-center rounded-xl px-6 py-2.5 text-white text-sm font-bold transition-all hover:scale-105 active:scale-95 btn-premium-primary btn-glow-primary">
+                        <span class="material-symbols-outlined mr-2 text-[20px]">add</span> Add Customer
+                    </button>
+                </div>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+                <div class="stat-card animate-fade-in-up stagger-2 flex flex-col gap-2 p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                    <div class="flex justify-between items-start">
+                        <p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Total Customers</p>
+                        <span class="p-2 bg-primary/10 rounded-lg text-primary material-symbols-outlined text-[20px] icon-hover">group</span>
+                    </div>
+                    <p class="text-slate-900 dark:text-white tracking-tight text-3xl font-bold leading-tight counter">1,284</p>
+                    <div class="flex items-center gap-1 mt-2">
+                        <span class="text-emerald-custom text-sm font-bold flex items-center">
+                            <span class="material-symbols-outlined text-[16px]">trending_up</span> +12%
+                        </span>
+                        <span class="text-slate-400 text-xs">vs last month</span>
+                    </div>
+                </div>
+
+                <div class="stat-card animate-fade-in-up stagger-3 flex flex-col gap-2 p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                    <div class="flex justify-between items-start">
+                        <p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Active Customers</p>
+                        <span class="p-2 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg text-emerald-custom material-symbols-outlined text-[20px] icon-hover">check_circle</span>
+                    </div>
+                    <p class="text-slate-900 dark:text-white tracking-tight text-3xl font-bold leading-tight counter">942</p>
+                    <div class="flex items-center gap-1 mt-2">
+                        <span class="text-emerald-custom text-sm font-bold flex items-center">
+                            <span class="material-symbols-outlined text-[16px]">trending_up</span> +5.4%
+                        </span>
+                        <span class="text-slate-400 text-xs">vs last month</span>
+                    </div>
+                </div>
+
+                <div class="stat-card animate-fade-in-up stagger-4 flex flex-col gap-2 p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                    <div class="flex justify-between items-start">
+                        <p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Pending Documents</p>
+                        <span class="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-lg text-amber-600 material-symbols-outlined text-[20px] icon-hover">description</span>
+                    </div>
+                    <p class="text-slate-900 dark:text-white tracking-tight text-3xl font-bold leading-tight counter">48</p>
+                    <div class="flex items-center gap-1 mt-2">
+                        <span class="text-red-500 text-sm font-bold flex items-center">
+                            <span class="material-symbols-outlined text-[16px]">trending_down</span> -2.1%
+                        </span>
+                        <span class="text-slate-400 text-xs">vs last month</span>
+                    </div>
+                </div>
+
+                <div class="stat-card animate-fade-in-up stagger-5 flex flex-col gap-2 p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                    <div class="flex justify-between items-start">
+                        <p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Files Uploaded</p>
+                        <span class="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg text-blue-600 material-symbols-outlined text-[20px] icon-hover">cloud_upload</span>
+                    </div>
+                    <p class="text-slate-900 dark:text-white tracking-tight text-3xl font-bold leading-tight counter">3,450</p>
+                    <div class="flex items-center gap-1 mt-2">
+                        <span class="text-emerald-custom text-sm font-bold flex items-center">
+                            <span class="material-symbols-outlined text-[16px]">trending_up</span> +114
+                        </span>
+                        <span class="text-slate-400 text-xs">this week</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Recent Customers Table -->
+                <div class="lg:col-span-2 premium-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 overflow-hidden animate-fade-in-up stagger-5">
+                    <div class="p-6 border-b border-slate-200 dark:border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <h2 class="text-lg font-bold text-slate-900 dark:text-white">Recent Customers</h2>
+                        <div class="flex gap-2">
+                            <input type="text" placeholder="Search records..." class="premium-input px-4 py-2 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm focus:ring-2 focus:ring-primary focus:border-transparent"/>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="premium-table w-full text-left">
+                            <thead>
+                                <tr class="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider font-bold">
+                                    <th class="px-6 py-4">ID</th>
+                                    <th class="px-6 py-4">Customer Name</th>
+                                    <th class="px-6 py-4">PO Number</th>
+                                    <th class="px-6 py-4">Documents</th>
+                                    <th class="px-6 py-4">Status</th>
+                                    <th class="px-6 py-4 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                                <tr class="hover:bg-blue-50/50 dark:hover:bg-blue-900/10 transition-colors group cursor-pointer">
+                                    <td class="px-6 py-4 text-sm text-slate-500">#00124</td>
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center gap-3">
+                                            <div class="size-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-bold text-primary">A</div>
+                                            <span class="text-sm font-bold text-slate-900 dark:text-white">Acme Global Inc.</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 text-sm text-slate-500 font-medium">PO-99231</td>
+                                    <td class="px-6 py-4 text-sm text-primary font-medium">3 Files</td>
+                                    <td class="px-6 py-4">
+                                        <span class="badge-active px-2.5 py-1 rounded-full text-xs font-bold inline-flex items-center">
+                                            <span class="size-1.5 rounded-full bg-emerald-500 mr-1.5"></span> Active
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 text-right">
+                                        <button class="action-icon text-slate-400 hover:text-primary transition-colors">
+                                            <span class="material-symbols-outlined">more_horiz</span>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-blue-50/50 dark:hover:bg-blue-900/10 transition-colors group cursor-pointer">
+                                    <td class="px-6 py-4 text-sm text-slate-500">#00125</td>
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center gap-3">
+                                            <div class="size-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-bold text-primary">S</div>
+                                            <span class="text-sm font-bold text-slate-900 dark:text-white">Stark Industries</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 text-sm text-slate-500 font-medium">PO-88210</td>
+                                    <td class="px-6 py-4 text-sm text-slate-400 font-medium">0 Files</td>
+                                    <td class="px-6 py-4">
+                                        <span class="badge-pending px-2.5 py-1 rounded-full text-xs font-bold inline-flex items-center">
+                                            <span class="size-1.5 rounded-full bg-amber-500 mr-1.5"></span> Pending
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 text-right">
+                                        <button class="action-icon text-slate-400 hover:text-primary transition-colors">
+                                            <span class="material-symbols-outlined">more_horiz</span>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="p-4 border-t border-slate-200 dark:border-slate-800 text-center">
+                        <button class="text-primary text-sm font-semibold hover:underline">View All Customers</button>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="premium-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 animate-fade-in-up stagger-5">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-lg font-bold text-slate-900 dark:text-white">Recent Activity</h2>
+                        <button class="text-primary text-sm font-semibold hover:underline">View All</button>
+                    </div>
+                    <div class="space-y-6">
+                        <div class="activity-item flex gap-4 items-start group">
+                            <div class="size-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-primary transition-transform group-hover:scale-110">
+                                <span class="material-symbols-outlined text-[20px]">person_add</span>
+                            </div>
+                            <div>
+                                <p class="text-sm font-bold text-slate-900 dark:text-white">New customer added</p>
+                                <p class="text-xs text-slate-500">2 minutes ago • Acme Global</p>
+                            </div>
+                        </div>
+                        <div class="activity-item flex gap-4 items-start group">
+                            <div class="size-10 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-custom transition-transform group-hover:scale-110">
+                                <span class="material-symbols-outlined text-[20px]">upload_file</span>
+                            </div>
+                            <div>
+                                <p class="text-sm font-bold text-slate-900 dark:text-white">Documents uploaded</p>
+                                <p class="text-xs text-slate-500">45 minutes ago • 3 files</p>
+                            </div>
+                        </div>
+                        <div class="activity-item flex gap-4 items-start group">
+                            <div class="size-10 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center text-amber-600 transition-transform group-hover:scale-110">
+                                <span class="material-symbols-outlined text-[20px]">pending</span>
+                            </div>
+                            <div>
+                                <p class="text-sm font-bold text-slate-900 dark:text-white">Pending approval</p>
+                                <p class="text-xs text-slate-500">2 hours ago • PO-88210</p>
+                            </div>
+                        </div>
+                        <div class="activity-item flex gap-4 items-start group">
+                            <div class="size-10 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center text-purple-600 transition-transform group-hover:scale-110">
+                                <span class="material-symbols-outlined text-[20px]">auto_mode</span>
+                            </div>
+                            <div>
+                                <p class="text-sm font-bold text-slate-900 dark:text-white">Automation completed</p>
+                                <p class="text-xs text-slate-500">5 hours ago • Excel import</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Automation Section -->
+            <div class="mt-8 premium-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 overflow-hidden animate-fade-in-up stagger-5">
+                <div class="p-6 border-b border-slate-200 dark:border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-900 dark:text-white">Automation (Imported Excel)</h2>
+                        <p class="text-sm text-slate-500">Review imported records before batch processing</p>
+                    </div>
+                    <button onclick="openAutomateModal()" class="px-6 py-2.5 rounded-xl text-white text-sm font-bold btn-premium-emerald btn-glow-emerald hover:scale-105 transition-all">
+                        <span class="material-symbols-outlined mr-2 text-[20px] inline-block align-middle">bolt</span> Automate
+                    </button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider font-bold">
+                                <th class="px-6 py-4"><input type="checkbox" class="rounded border-slate-300"/></th>
+                                <th class="px-6 py-4">Excel ID</th>
+                                <th class="px-6 py-4">Name</th>
+                                <th class="px-6 py-4">Email</th>
+                                <th class="px-6 py-4">Phone</th>
+                                <th class="px-6 py-4">Target Customer</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                            <tr class="hover:bg-blue-50/50 dark:hover:bg-blue-900/10 transition-colors">
+                                <td class="px-6 py-4"><input type="checkbox" class="rounded border-slate-300"/></td>
+                                <td class="px-6 py-4 text-sm text-slate-500 font-medium">EXL-001</td>
+                                <td class="px-6 py-4 text-sm font-bold text-slate-900 dark:text-white">Robert Brown</td>
+                                <td class="px-6 py-4 text-sm text-slate-500">robert@example.com</td>
+                                <td class="px-6 py-4 text-sm text-slate-500">+1 234 567 8901</td>
+                                <td class="px-6 py-4 text-sm text-slate-500">Acme Corp</td>
+                            </tr>
+                            <tr class="hover:bg-blue-50/50 dark:hover:bg-blue-900/10 transition-colors">
+                                <td class="px-6 py-4"><input type="checkbox" class="rounded border-slate-300"/></td>
+                                <td class="px-6 py-4 text-sm text-slate-500 font-medium">EXL-002</td>
+                                <td class="px-6 py-4 text-sm font-bold text-slate-900 dark:text-white">Sarah Wilson</td>
+                                <td class="px-6 py-4 text-sm text-slate-500">sarah@example.com</td>
+                                <td class="px-6 py-4 text-sm text-slate-500">+1 234 567 8902</td>
+                                <td class="px-6 py-4 text-sm text-slate-500">Tech Solutions</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add Customer Modal -->
+    <div id="customerModal" class="premium-modal hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="premium-modal-content bg-white dark:bg-slate-900 shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto border border-slate-200 dark:border-slate-800">
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-800">
+                <div>
+                    <h3 class="text-xl font-bold text-slate-900 dark:text-white">Add New Customer</h3>
+                    <p class="text-sm text-slate-500 mt-1">Fill in the customer details below</p>
+                </div>
+                <button onclick="closeCustomerModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
+                    <span class="material-symbols-outlined text-[28px]">close</span>
+                </button>
+            </div>
+
+            <!-- Modal Body -->
+            <form id="customerForm" class="p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Client Name -->
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                            Client Name <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" id="clientName" required class="premium-input w-full px-4 py-2.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent transition-all" placeholder="Enter client name"/>
+                    </div>
+
+                    <!-- Purchase Order -->
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                            Purchase Order
+                        </label>
+                        <input type="text" id="purchaseOrder" class="premium-input w-full px-4 py-2.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent transition-all" placeholder="Enter PO number"/>
+                    </div>
+
+                    <!-- Sales Order -->
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                            Sales Order
+                        </label>
+                        <input type="text" id="salesOrder" class="premium-input w-full px-4 py-2.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent transition-all" placeholder="Enter SO number"/>
+                    </div>
+
+                    <!-- Email Address -->
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                            Email Address
+                        </label>
+                        <input type="email" id="emailAddress" class="premium-input w-full px-4 py-2.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent transition-all" placeholder="customer@example.com"/>
+                    </div>
+
+                    <!-- Phone Number -->
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                            Phone Number
+                        </label>
+                        <input type="tel" id="phoneNumber" class="premium-input w-full px-4 py-2.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent transition-all" placeholder="+1 234 567 8900"/>
+                    </div>
+
+                    <!-- No. of Documents -->
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                            No. of Documents <span class="text-red-500">*</span>
+                        </label>
+                        <input type="number" id="numDocuments" required min="1" class="premium-input w-full px-4 py-2.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent transition-all" placeholder="Enter number"/>
+                    </div>
+
+                    <!-- Status -->
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                            Status
+                        </label>
+                        <select id="status" class="premium-input w-full px-4 py-2.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
+                            <option value="Active">Active</option>
+                            <option value="Pending">Pending</option>
+                            <option value="Inactive">Inactive</option>
+                        </select>
+                    </div>
+
+                    <!-- Mark as New Checkbox -->
+                    <div class="md:col-span-2 flex items-center gap-3">
+                        <input type="checkbox" id="markAsNew" class="w-5 h-5 rounded border-slate-300 text-primary focus:ring-primary focus:ring-offset-0"/>
+                        <label for="markAsNew" class="text-sm font-medium text-slate-700 dark:text-slate-300 cursor-pointer">
+                            Mark as New Customer
+                        </label>
+                    </div>
+
+                    <!-- File Upload Section -->
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                            Upload Documents
+                        </label>
+                        <div class="relative">
+                            <input type="file" id="fileUpload" multiple accept=".pdf,.xlsx,.xls" class="hidden" onchange="handleFileSelect(event)"/>
+                            <label for="fileUpload" class="file-upload-zone flex flex-col items-center justify-center w-full px-6 py-8 border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-lg cursor-pointer bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all group">
+                                <span class="material-symbols-outlined text-[48px] text-slate-400 group-hover:text-primary transition-colors mb-3">cloud_upload</span>
+                                <span class="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Click to upload or drag and drop</span>
+                                <span class="text-xs text-slate-500" id="fileInfo">Accepted formats: PDF, XLSX, XLS</span>
+                            </label>
+                        </div>
+                        <!-- Selected Files Display -->
+                        <div id="selectedFiles" class="mt-3 space-y-2"></div>
+                    </div>
+                </div>
+
+                <!-- Modal Footer -->
+                <div class="flex items-center justify-end gap-3 mt-8 pt-6 border-t border-slate-200 dark:border-slate-800">
+                    <button type="button" onclick="closeCustomerModal()" class="btn-premium-outline px-6 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn-premium-primary px-6 py-2.5 rounded-lg text-white font-semibold transition-all flex items-center gap-2">
+                        <span class="material-symbols-outlined text-[20px]">check</span>
+                        Submit Request
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="premium-toast hidden fixed bottom-6 right-6 bg-emerald-500 text-white px-6 py-4 rounded-lg shadow-2xl flex items-center gap-3 z-50">
+        <span class="material-symbols-outlined">check_circle</span>
+        <span id="toastMessage">Customer added successfully!</span>
+    </div>
+
+    <!-- Automate Modal -->
+    <div id="automateModal" class="premium-modal hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="premium-modal-content bg-white dark:bg-slate-900 shadow-2xl max-w-lg w-full border border-slate-200 dark:border-slate-800">
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-800">
+                <h3 class="text-xl font-bold text-slate-900 dark:text-white">Select / Add Revision</h3>
+                <button onclick="closeAutomateModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
+                    <span class="material-symbols-outlined text-[28px]">close</span>
+                </button>
+            </div>
+
+            <!-- Modal Body -->
+            <form id="automateForm" class="p-6">
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                        Select Revision
+                    </label>
+                    <select id="revisionSelect" onchange="handleRevisionChange()" class="premium-input w-full px-4 py-3 rounded-lg bg-white dark:bg-slate-800 border-2 border-emerald-500 dark:border-emerald-600 text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all text-base">
+                        <option value="0">Revision 0</option>
+                        <option value="1">Revision 1</option>
+                        <option value="2">Revision 2</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+
+                <!-- Other Revision Input (Hidden by default) -->
+                <div id="otherRevisionInput" class="mt-4 hidden">
+                    <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                        Enter Custom Revision
+                    </label>
+                    <input type="text" id="customRevision" class="premium-input w-full px-4 py-2.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all" placeholder="Enter revision name"/>
+                </div>
+
+                <!-- Modal Footer -->
+                <div class="flex items-center justify-end gap-3 mt-6">
+                    <button type="button" onclick="closeAutomateModal()" class="btn-premium-outline px-6 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn-premium-emerald px-6 py-2.5 rounded-lg text-white font-semibold transition-all flex items-center gap-2">
+                        <span class="material-symbols-outlined text-[20px]">check</span>
+                        Add
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
