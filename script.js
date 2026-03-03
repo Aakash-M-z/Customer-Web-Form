@@ -382,19 +382,45 @@ function loadCustomers() {
         });
     }
 }
-                    </span >
-                </td >
-    <td class="px-6 py-4 text-right">
-        <button class="action-icon text-slate-400 hover:text-primary transition-colors">
-            <span class="material-symbols-outlined">more_horiz</span>
-        </button>
-    </td>
-            </tr >
-    `;
-    }
-}
 
 // Function to delete customer
 function deleteCustomer(customerId) {
     openDeleteModal(customerId);
+}
+
+// Excel Table Select All Functionality
+function toggleSelectAll() {
+    const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+    const rowCheckboxes = document.querySelectorAll('.excel-row-checkbox');
+
+    rowCheckboxes.forEach(checkbox => {
+        checkbox.checked = selectAllCheckbox.checked;
+    });
+
+    console.log('Select All clicked:', selectAllCheckbox.checked);
+    console.log('Total checkboxes:', rowCheckboxes.length);
+}
+
+function updateSelectAllCheckbox() {
+    const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+    const rowCheckboxes = document.querySelectorAll('.excel-row-checkbox');
+    const checkedCount = document.querySelectorAll('.excel-row-checkbox:checked').length;
+
+    console.log('Checked count:', checkedCount, 'Total:', rowCheckboxes.length);
+
+    // If all checkboxes are checked, check the select all checkbox
+    if (checkedCount === rowCheckboxes.length && rowCheckboxes.length > 0) {
+        selectAllCheckbox.checked = true;
+        selectAllCheckbox.indeterminate = false;
+    }
+    // If some but not all are checked, show indeterminate state
+    else if (checkedCount > 0) {
+        selectAllCheckbox.checked = false;
+        selectAllCheckbox.indeterminate = true;
+    }
+    // If none are checked, uncheck the select all checkbox
+    else {
+        selectAllCheckbox.checked = false;
+        selectAllCheckbox.indeterminate = false;
+    }
 }

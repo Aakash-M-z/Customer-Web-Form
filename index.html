@@ -284,8 +284,10 @@
                 <div class="overflow-x-auto">
                     <table class="w-full text-left">
                         <thead>
-                            <tr class="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider font-bold">
-                                <th class="px-6 py-4"><input type="checkbox" class="rounded border-slate-300"/></th>
+                            <tr class="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider font-medium">
+                                <th class="px-6 py-4">
+                                    <input type="checkbox" id="selectAllCheckbox" class="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary focus:ring-2 cursor-pointer" onchange="toggleSelectAll()"/>
+                                </th>
                                 <th class="px-6 py-4">Excel ID</th>
                                 <th class="px-6 py-4">Name</th>
                                 <th class="px-6 py-4">Email</th>
@@ -295,17 +297,21 @@
                         </thead>
                         <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
                             <tr class="hover:bg-blue-50/50 dark:hover:bg-blue-900/10 transition-colors">
-                                <td class="px-6 py-4"><input type="checkbox" class="rounded border-slate-300"/></td>
+                                <td class="px-6 py-4">
+                                    <input type="checkbox" class="excel-row-checkbox w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary focus:ring-2 cursor-pointer" onchange="updateSelectAllCheckbox()"/>
+                                </td>
                                 <td class="px-6 py-4 text-sm text-slate-500 font-medium">EXL-001</td>
-                                <td class="px-6 py-4 text-sm font-bold text-slate-900 dark:text-white">Robert Brown</td>
+                                <td class="px-6 py-4 text-sm font-medium text-slate-900 dark:text-white">Robert Brown</td>
                                 <td class="px-6 py-4 text-sm text-slate-500">robert@example.com</td>
                                 <td class="px-6 py-4 text-sm text-slate-500">+1 234 567 8901</td>
                                 <td class="px-6 py-4 text-sm text-slate-500">Acme Corp</td>
                             </tr>
                             <tr class="hover:bg-blue-50/50 dark:hover:bg-blue-900/10 transition-colors">
-                                <td class="px-6 py-4"><input type="checkbox" class="rounded border-slate-300"/></td>
+                                <td class="px-6 py-4">
+                                    <input type="checkbox" class="excel-row-checkbox w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary focus:ring-2 cursor-pointer" onchange="updateSelectAllCheckbox()"/>
+                                </td>
                                 <td class="px-6 py-4 text-sm text-slate-500 font-medium">EXL-002</td>
-                                <td class="px-6 py-4 text-sm font-bold text-slate-900 dark:text-white">Sarah Wilson</td>
+                                <td class="px-6 py-4 text-sm font-medium text-slate-900 dark:text-white">Sarah Wilson</td>
                                 <td class="px-6 py-4 text-sm text-slate-500">sarah@example.com</td>
                                 <td class="px-6 py-4 text-sm text-slate-500">+1 234 567 8902</td>
                                 <td class="px-6 py-4 text-sm text-slate-500">Tech Solutions</td>

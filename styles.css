@@ -544,3 +544,46 @@ label {
 #deleteModal .premium-modal-content {
     animation: slideDown 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
+/* Checkbox Styling */
+input[type="checkbox"] {
+    cursor: pointer;
+    width: 18px;
+    height: 18px;
+    accent-color: #2563eb;
+}
+
+input[type="checkbox"]:hover {
+    transform: scale(1.05);
+}
+
+input[type="checkbox"]:indeterminate {
+    background-color: #2563eb;
+    border-color: #2563eb;
+}
+
+/* Excel table checkbox styling */
+.excel-row-checkbox {
+    transition: all 0.2s ease;
+}
+
+.excel-row-checkbox:checked {
+    background-color: #2563eb;
+    border-color: #2563eb;
+}
+
+#selectAllCheckbox {
+    transition: all 0.2s ease;
+}
+
+#selectAllCheckbox:indeterminate::before {
+    content: '';
+    display: block;
+    width: 10px;
+    height: 2px;
+    background: white;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
