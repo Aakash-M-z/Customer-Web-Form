@@ -25,6 +25,35 @@ function closeAutomateModal() {
     document.getElementById('otherRevisionInput').classList.add('hidden');
 }
 
+// Delete Modal Functions
+let customerToDelete = null;
+
+function openDeleteModal(customerId) {
+    customerToDelete = customerId;
+    document.getElementById('deleteModal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeDeleteModal() {
+    document.getElementById('deleteModal').classList.add('hidden');
+    document.body.style.overflow = 'auto';
+    customerToDelete = null;
+}
+
+function confirmDelete() {
+    if (customerToDelete) {
+        let customers = JSON.parse(localStorage.getItem('customers') || '[]');
+        customers = customers.filter(c => c.id !== customerToDelete);
+        localStorage.setItem('customers', JSON.stringify(customers));
+
+        // Reload table
+        loadCustomers();
+
+        showToast('Customer deleted successfully!');
+        closeDeleteModal();
+    }
+}
+
 function handleRevisionChange() {
     const revisionSelect = document.getElementById('revisionSelect');
     const otherRevisionInput = document.getElementById('otherRevisionInput');
@@ -85,10 +114,14 @@ function removeFile(index) {
 
 // Form Submission
 document.addEventListener('DOMContentLoaded', function () {
+    // Load existing customers on page load
+    loadCustomers();
+
     document.getElementById('customerForm').addEventListener('submit', function (e) {
         e.preventDefault();
 
         const formData = {
+            id: '#' + String(Date.now()).slice(-5),
             clientName: document.getElementById('clientName').value,
             purchaseOrder: document.getElementById('purchaseOrder').value,
             salesOrder: document.getElementById('salesOrder').value,
@@ -103,8 +136,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Store in localStorage
         let customers = JSON.parse(localStorage.getItem('customers') || '[]');
-        customers.push(formData);
+        customers.unshift(formData); // Add to beginning of array
         localStorage.setItem('customers', JSON.stringify(customers));
+
+        // Add to table immediately
+        addCustomerToTable(formData);
 
         // Show toast
         showToast('Customer added successfully!');
@@ -112,7 +148,6 @@ document.addEventListener('DOMContentLoaded', function () {
         // Close modal
         closeCustomerModal();
 
-        // Optionally refresh table
         console.log('Customer data saved:', formData);
     });
 
@@ -163,6 +198,13 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
+    // Close delete modal on outside click
+    document.getElementById('deleteModal').addEventListener('click', function (e) {
+        if (e.target === this) {
+            closeDeleteModal();
+        }
+    });
+
     // Drag and drop functionality
     const dropZone = document.querySelector('label[for="fileUpload"]');
 
@@ -204,4 +246,111 @@ function showToast(message) {
     setTimeout(() => {
         toast.classList.add('hidden');
     }, 3000);
+}
+
+// Function to add customer to table
+function addCustomerToTable(customer) {
+    const tbody = document.querySelector('.premium-table tbody');
+    const row = document.createElement('tr');
+    row.className = 'hover:bg-blue-50/50 dark:hover:bg-blue-900/10 transition-colors group cursor-pointer';
+
+    // Get first letter of customer name for avatar
+    const firstLetter = customer.clientName.charAt(0).toUpperCase();
+
+    // Determine badge class based on status
+    let badgeClass = 'badge-active';
+    if (customer.status === 'Pending') badgeClass = 'badge-pending';
+    if (customer.status === 'Inactive') badgeClass = 'badge-inactive';
+
+    row.innerHTML = `
+        <td class="px-6 py-4 text-sm text-slate-500">${customer.id}</td>
+        <td class="px-6 py-4">
+            <div class="flex items-center gap-3">
+                <div class="size-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-semibold text-primary">${firstLetter}</div>
+                <span class="text-sm font-medium text-slate-900 dark:text-white">${customer.clientName}</span>
+            </div>
+        </td>
+        <td class="px-6 py-4 text-sm text-slate-500 font-medium">${customer.purchaseOrder || 'N/A'}</td>
+        <td class="px-6 py-4 text-sm ${customer.files > 0 ? 'text-primary' : 'text-slate-400'} font-medium">${customer.files} File${customer.files !== 1 ? 's' : ''}</td>
+        <td class="px-6 py-4">
+            <span class="${badgeClass} px-2.5 py-1 rounded-full text-xs font-medium inline-flex items-center">
+                <span class="size-1.5 rounded-full ${customer.status === 'Active' ? 'bg-emerald-500' : customer.status === 'Pending' ? 'bg-amber-500' : 'bg-red-500'} mr-1.5"></span> ${customer.status}
+            </span>
+        </td>
+        <td class="px-6 py-4 text-right">
+            <button class="action-icon text-slate-400 hover:text-primary transition-colors" onclick="deleteCustomer('${customer.id}')">
+                <span class="material-symbols-outlined">delete</span>
+            </button>
+        </td>
+    `;
+
+    // Insert at the beginning of tbody
+    tbody.insertBefore(row, tbody.firstChild);
+}
+
+// Function to load customers from localStorage
+function loadCustomers() {
+    const customers = JSON.parse(localStorage.getItem('customers') || '[]');
+    const tbody = document.querySelector('.premium-table tbody');
+
+    // Clear existing rows except the default ones
+    tbody.innerHTML = '';
+
+    // Add customers from localStorage
+    customers.forEach(customer => {
+        addCustomerToTable(customer);
+    });
+
+    // If no customers, show default data
+    if (customers.length === 0) {
+        tbody.innerHTML = `
+            <tr class="hover:bg-blue-50/50 dark:hover:bg-blue-900/10 transition-colors group cursor-pointer">
+                <td class="px-6 py-4 text-sm text-slate-500">#00124</td>
+                <td class="px-6 py-4">
+                    <div class="flex items-center gap-3">
+                        <div class="size-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-semibold text-primary">A</div>
+                        <span class="text-sm font-medium text-slate-900 dark:text-white">Acme Global Inc.</span>
+                    </div>
+                </td>
+                <td class="px-6 py-4 text-sm text-slate-500 font-medium">PO-99231</td>
+                <td class="px-6 py-4 text-sm text-primary font-medium">3 Files</td>
+                <td class="px-6 py-4">
+                    <span class="badge-active px-2.5 py-1 rounded-full text-xs font-medium inline-flex items-center">
+                        <span class="size-1.5 rounded-full bg-emerald-500 mr-1.5"></span> Active
+                    </span>
+                </td>
+                <td class="px-6 py-4 text-right">
+                    <button class="action-icon text-slate-400 hover:text-primary transition-colors">
+                        <span class="material-symbols-outlined">more_horiz</span>
+                    </button>
+                </td>
+            </tr>
+            <tr class="hover:bg-blue-50/50 dark:hover:bg-blue-900/10 transition-colors group cursor-pointer">
+                <td class="px-6 py-4 text-sm text-slate-500">#00125</td>
+                <td class="px-6 py-4">
+                    <div class="flex items-center gap-3">
+                        <div class="size-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-semibold text-primary">S</div>
+                        <span class="text-sm font-medium text-slate-900 dark:text-white">Stark Industries</span>
+                    </div>
+                </td>
+                <td class="px-6 py-4 text-sm text-slate-500 font-medium">PO-88210</td>
+                <td class="px-6 py-4 text-sm text-slate-400 font-medium">0 Files</td>
+                <td class="px-6 py-4">
+                    <span class="badge-pending px-2.5 py-1 rounded-full text-xs font-medium inline-flex items-center">
+                        <span class="size-1.5 rounded-full bg-amber-500 mr-1.5"></span> Pending
+                    </span>
+                </td>
+                <td class="px-6 py-4 text-right">
+                    <button class="action-icon text-slate-400 hover:text-primary transition-colors">
+                        <span class="material-symbols-outlined">more_horiz</span>
+                    </button>
+                </td>
+            </tr>
+        `;
+    }
+}
+
+// Function to delete customer
+function deleteCustomer(customerId) {
+    openDeleteModal(customerId);
 }

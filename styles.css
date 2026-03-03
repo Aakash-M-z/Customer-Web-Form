@@ -505,3 +505,42 @@ label {
 .text-red-500 {
     font-weight: 500;
 }
+
+/* Delete Button Styling */
+.btn-delete {
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+    box-shadow: 0 4px 15px rgba(220, 38, 38, 0.3);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-delete:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(220, 38, 38, 0.4);
+}
+
+/* Delete Modal Warning Icon Animation */
+#deleteModal .material-symbols-outlined {
+    animation: warningPulse 2s ease-in-out infinite;
+}
+
+@keyframes warningPulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.1);
+    }
+}
+
+/* Delete Modal Backdrop */
+#deleteModal {
+    animation: fadeIn 0.2s ease-out;
+}
+
+/* Delete Modal Content */
+#deleteModal .premium-modal-content {
+    animation: slideDown 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
