@@ -293,13 +293,8 @@ function loadCustomers() {
     const customers = JSON.parse(localStorage.getItem('customers') || '[]');
     const tbody = document.querySelector('.premium-table tbody');
 
-    // Clear existing rows except the default ones
+    // Clear existing rows
     tbody.innerHTML = '';
-
-    // Add customers from localStorage
-    customers.forEach(customer => {
-        addCustomerToTable(customer);
-    });
 
     // If no customers, show default data
     if (customers.length === 0) {
@@ -347,6 +342,55 @@ function loadCustomers() {
                 </td>
             </tr>
         `;
+    } else {
+        // Add customers from localStorage (newest first)
+        customers.forEach(customer => {
+            const row = document.createElement('tr');
+            row.className = 'hover:bg-blue-50/50 dark:hover:bg-blue-900/10 transition-colors group cursor-pointer';
+
+            // Get first letter of customer name for avatar
+            const firstLetter = customer.clientName.charAt(0).toUpperCase();
+
+            // Determine badge class based on status
+            let badgeClass = 'badge-active';
+            if (customer.status === 'Pending') badgeClass = 'badge-pending';
+            if (customer.status === 'Inactive') badgeClass = 'badge-inactive';
+
+            row.innerHTML = `
+                <td class="px-6 py-4 text-sm text-slate-500">${customer.id}</td>
+                <td class="px-6 py-4">
+                    <div class="flex items-center gap-3">
+                        <div class="size-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-semibold text-primary">${firstLetter}</div>
+                        <span class="text-sm font-medium text-slate-900 dark:text-white">${customer.clientName}</span>
+                    </div>
+                </td>
+                <td class="px-6 py-4 text-sm text-slate-500 font-medium">${customer.purchaseOrder || 'N/A'}</td>
+                <td class="px-6 py-4 text-sm ${customer.files > 0 ? 'text-primary' : 'text-slate-400'} font-medium">${customer.files} File${customer.files !== 1 ? 's' : ''}</td>
+                <td class="px-6 py-4">
+                    <span class="${badgeClass} px-2.5 py-1 rounded-full text-xs font-medium inline-flex items-center">
+                        <span class="size-1.5 rounded-full ${customer.status === 'Active' ? 'bg-emerald-500' : customer.status === 'Pending' ? 'bg-amber-500' : 'bg-red-500'} mr-1.5"></span> ${customer.status}
+                    </span>
+                </td>
+                <td class="px-6 py-4 text-right">
+                    <button class="action-icon text-slate-400 hover:text-primary transition-colors" onclick="deleteCustomer('${customer.id}')">
+                        <span class="material-symbols-outlined">delete</span>
+                    </button>
+                </td>
+            `;
+
+            tbody.appendChild(row);
+        });
+    }
+}
+                    </span >
+                </td >
+    <td class="px-6 py-4 text-right">
+        <button class="action-icon text-slate-400 hover:text-primary transition-colors">
+            <span class="material-symbols-outlined">more_horiz</span>
+        </button>
+    </td>
+            </tr >
+    `;
     }
 }
 
