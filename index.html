@@ -5,9 +5,8 @@
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
     <title>Customer Management & Automation</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
     <link rel="stylesheet" href="styles.css"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
     <script>
         tailwind.config = {
             darkMode: "class",
@@ -20,7 +19,7 @@
                         "background-dark": "#0f172a",
                     },
                     fontFamily: {
-                        "display": ["Public Sans", "sans-serif"]
+                        "sans": ["system-ui", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "Roboto", "Arial", "sans-serif"]
                     },
                     borderRadius: {
                         "DEFAULT": "0.25rem",
@@ -33,7 +32,7 @@
         }
     </script>
 </head>
-<body class="font-display bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 mesh-gradient min-h-screen">
+<body class="font-sans bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 mesh-gradient min-h-screen">
     <div class="layout-container flex h-full grow flex-col">
         <!-- Top Navigation -->
         <header class="premium-header flex items-center justify-between whitespace-nowrap border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md px-6 md:px-10 py-3 sticky top-0 z-50">
@@ -42,7 +41,7 @@
                     <div class="size-8 bg-primary rounded-lg flex items-center justify-center text-white">
                         <span class="material-symbols-outlined">analytics</span>
                     </div>
-                    <h2 class="text-slate-900 dark:text-white text-xl font-bold leading-tight tracking-tight">Customer Portal</h2>
+                    <h2 class="text-slate-900 dark:text-white text-xl font-semibold leading-tight tracking-tight">Customer Portal</h2>
                 </div>
                 <div class="hidden lg:flex items-center">
                     <label class="flex flex-col min-w-64 h-10">
@@ -79,14 +78,14 @@
             <!-- Dashboard Header -->
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 animate-fade-in-up stagger-1">
                 <div>
-                    <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Customer Form & Automation</h1>
+                    <h1 class="text-2xl font-semibold text-slate-900 dark:text-white">Customer Form & Automation</h1>
                     <p class="text-slate-500 dark:text-slate-400">Manage your customer records and excel automation tasks from a single dashboard.</p>
                 </div>
                 <div class="flex gap-3">
-                    <button class="flex items-center justify-center rounded-xl px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-sm font-bold btn-premium-outline">
+                    <button class="flex items-center justify-center rounded-xl px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-sm font-medium btn-premium-outline">
                         <span class="material-symbols-outlined mr-2 text-[20px]">file_download</span> Export
                     </button>
-                    <button onclick="openCustomerModal()" class="flex items-center justify-center rounded-xl px-6 py-2.5 text-white text-sm font-bold transition-all hover:scale-105 active:scale-95 btn-premium-primary btn-glow-primary">
+                    <button onclick="openCustomerModal()" class="flex items-center justify-center rounded-xl px-6 py-2.5 text-white text-sm font-medium transition-all hover:scale-105 active:scale-95 btn-premium-primary btn-glow-primary">
                         <span class="material-symbols-outlined mr-2 text-[20px]">add</span> Add Customer
                     </button>
                 </div>
@@ -94,57 +93,57 @@
 
             <!-- Stats Grid -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-                <div class="stat-card animate-fade-in-up stagger-2 flex flex-col gap-2 p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                <div class="stat-card animate-fade-in-up stagger-2 flex flex-col gap-1 p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
                     <div class="flex justify-between items-start">
                         <p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Total Customers</p>
-                        <span class="p-2 bg-primary/10 rounded-lg text-primary material-symbols-outlined text-[20px] icon-hover">group</span>
+                        <span class="p-1.5 bg-primary/10 rounded-lg text-primary material-symbols-outlined text-[18px] icon-hover">group</span>
                     </div>
-                    <p class="text-slate-900 dark:text-white tracking-tight text-3xl font-bold leading-tight counter">1,284</p>
-                    <div class="flex items-center gap-1 mt-2">
-                        <span class="text-emerald-custom text-sm font-bold flex items-center">
-                            <span class="material-symbols-outlined text-[16px]">trending_up</span> +12%
+                    <p class="text-slate-900 dark:text-white tracking-tight text-2xl font-semibold leading-tight counter">1,284</p>
+                    <div class="flex items-center gap-1 mt-1">
+                        <span class="text-emerald-custom text-xs font-medium flex items-center">
+                            <span class="material-symbols-outlined text-[14px]">trending_up</span> +12%
                         </span>
                         <span class="text-slate-400 text-xs">vs last month</span>
                     </div>
                 </div>
 
-                <div class="stat-card animate-fade-in-up stagger-3 flex flex-col gap-2 p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                <div class="stat-card animate-fade-in-up stagger-3 flex flex-col gap-1 p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
                     <div class="flex justify-between items-start">
                         <p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Active Customers</p>
-                        <span class="p-2 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg text-emerald-custom material-symbols-outlined text-[20px] icon-hover">check_circle</span>
+                        <span class="p-1.5 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg text-emerald-custom material-symbols-outlined text-[18px] icon-hover">check_circle</span>
                     </div>
-                    <p class="text-slate-900 dark:text-white tracking-tight text-3xl font-bold leading-tight counter">942</p>
-                    <div class="flex items-center gap-1 mt-2">
-                        <span class="text-emerald-custom text-sm font-bold flex items-center">
-                            <span class="material-symbols-outlined text-[16px]">trending_up</span> +5.4%
+                    <p class="text-slate-900 dark:text-white tracking-tight text-2xl font-semibold leading-tight counter">942</p>
+                    <div class="flex items-center gap-1 mt-1">
+                        <span class="text-emerald-custom text-xs font-medium flex items-center">
+                            <span class="material-symbols-outlined text-[14px]">trending_up</span> +5.4%
                         </span>
                         <span class="text-slate-400 text-xs">vs last month</span>
                     </div>
                 </div>
 
-                <div class="stat-card animate-fade-in-up stagger-4 flex flex-col gap-2 p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                <div class="stat-card animate-fade-in-up stagger-4 flex flex-col gap-1 p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
                     <div class="flex justify-between items-start">
                         <p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Pending Documents</p>
-                        <span class="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-lg text-amber-600 material-symbols-outlined text-[20px] icon-hover">description</span>
+                        <span class="p-1.5 bg-amber-100 dark:bg-amber-900/30 rounded-lg text-amber-600 material-symbols-outlined text-[18px] icon-hover">description</span>
                     </div>
-                    <p class="text-slate-900 dark:text-white tracking-tight text-3xl font-bold leading-tight counter">48</p>
-                    <div class="flex items-center gap-1 mt-2">
-                        <span class="text-red-500 text-sm font-bold flex items-center">
-                            <span class="material-symbols-outlined text-[16px]">trending_down</span> -2.1%
+                    <p class="text-slate-900 dark:text-white tracking-tight text-2xl font-semibold leading-tight counter">48</p>
+                    <div class="flex items-center gap-1 mt-1">
+                        <span class="text-red-500 text-xs font-medium flex items-center">
+                            <span class="material-symbols-outlined text-[14px]">trending_down</span> -2.1%
                         </span>
                         <span class="text-slate-400 text-xs">vs last month</span>
                     </div>
                 </div>
 
-                <div class="stat-card animate-fade-in-up stagger-5 flex flex-col gap-2 p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                <div class="stat-card animate-fade-in-up stagger-5 flex flex-col gap-1 p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
                     <div class="flex justify-between items-start">
                         <p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Files Uploaded</p>
-                        <span class="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg text-blue-600 material-symbols-outlined text-[20px] icon-hover">cloud_upload</span>
+                        <span class="p-1.5 bg-blue-100 dark:bg-blue-900/30 rounded-lg text-blue-600 material-symbols-outlined text-[18px] icon-hover">cloud_upload</span>
                     </div>
-                    <p class="text-slate-900 dark:text-white tracking-tight text-3xl font-bold leading-tight counter">3,450</p>
-                    <div class="flex items-center gap-1 mt-2">
-                        <span class="text-emerald-custom text-sm font-bold flex items-center">
-                            <span class="material-symbols-outlined text-[16px]">trending_up</span> +114
+                    <p class="text-slate-900 dark:text-white tracking-tight text-2xl font-semibold leading-tight counter">3,450</p>
+                    <div class="flex items-center gap-1 mt-1">
+                        <span class="text-emerald-custom text-xs font-medium flex items-center">
+                            <span class="material-symbols-outlined text-[14px]">trending_up</span> +114
                         </span>
                         <span class="text-slate-400 text-xs">this week</span>
                     </div>
