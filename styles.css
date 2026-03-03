@@ -438,3 +438,70 @@ input[type="checkbox"]:checked {
 #otherRevisionInput {
     animation: slideInDown 0.3s ease-out;
 }
+
+/* Global Font Weight Adjustments */
+body {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+    font-weight: 400;
+}
+
+/* Headings - Use semibold instead of bold */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-weight: 600;
+}
+
+/* Titles */
+.text-xl,
+.text-2xl,
+.text-3xl {
+    font-weight: 600;
+}
+
+/* Buttons - Use medium weight */
+button {
+    font-weight: 500;
+}
+
+/* Table headers - Use medium weight */
+thead th {
+    font-weight: 500;
+}
+
+/* Badges and tags - Use medium weight */
+.badge-active,
+.badge-pending,
+.badge-inactive {
+    font-weight: 500;
+}
+
+/* Stats numbers - Use semibold */
+.counter {
+    font-weight: 600;
+}
+
+/* Form labels - Use medium weight */
+label {
+    font-weight: 500;
+}
+
+/* Override Tailwind font-bold with semibold */
+.font-bold {
+    font-weight: 600 !important;
+}
+
+/* Customer names and important text - Use medium */
+.text-sm.font-bold,
+.text-base.font-bold {
+    font-weight: 500 !important;
+}
+
+/* Percentage changes - Use medium */
+.text-emerald-custom,
+.text-red-500 {
+    font-weight: 500;
+}
