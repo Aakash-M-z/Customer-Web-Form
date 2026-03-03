@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Automation Dashboard - Customer Management</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>"/>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="styles.css?v=2.0"/>
+    <link rel="stylesheet" href="premium-styles.css?v=2.0"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#2563eb",
+                        "emerald-custom": "#059669",
+                        "background-light": "#f8faff",
+                        "background-dark": "#0f172a",
+                    },
+                    fontFamily: {
+                        "sans": ["system-ui", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "Roboto", "Arial", "sans-serif"]
+                    },
+                },
+            },
+        }
+    </script>
+</head>
+<body class="font-sans bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 mesh-gradient min-h-screen">
+    <div class="layout-container flex h-full grow flex-col">
+        <!-- Top Navigation -->
+        <header class="premium-header flex items-center justify-between whitespace-nowrap border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md px-6 md:px-10 py-3 sticky top-0 z-50">
+            <div class="flex items-center gap-8">
+                <div class="flex items-center gap-3 text-primary">
+                    <div class="size-8 bg-primary rounded-lg flex items-center justify-center text-white">
+                        <span class="material-symbols-outlined">analytics</span>
+                    </div>
+                    <h2 class="text-slate-900 dark:text-white text-xl font-semibold leading-tight tracking-tight">Customer Portal</h2>
+                </div>
+            </div>
+            <div class="flex flex-1 justify-end gap-6 items-center">
+                <nav class="hidden md:flex items-center gap-6">
+                    <a class="text-slate-600 dark:text-slate-400 text-sm font-medium hover:text-primary transition-colors" href="index.html">Dashboard</a>
+                    <a class="text-slate-600 dark:text-slate-400 text-sm font-medium hover:text-primary transition-colors" href="customers.html">Customers</a>
+                    <a class="text-primary text-sm font-semibold border-b-2 border-primary pb-1" href="automations.html">Automation</a>
+                    <a class="text-slate-600 dark:text-slate-400 text-sm font-medium hover:text-primary transition-colors" href="#">Settings</a>
+                </nav>
+                <div class="flex gap-3">
+                    <button class="relative flex items-center justify-center rounded-xl size-10 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all icon-hover">
+                        <span class="material-symbols-outlined">notifications</span>
+                    </button>
+                    <div class="flex items-center gap-3 pl-2">
+                        <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border-2 border-primary/20" style='background-image: url("https://ui-avatars.com/api/?name=Admin+User&background=2563eb&color=fff");'></div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="flex-1 px-6 md:px-10 py-8 max-w-[1400px] mx-auto w-full">
+            <!-- Page Header -->
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 animate-fade-in-up">
+                <div>
+                    <h1 class="text-2xl font-semibold text-slate-900 dark:text-white">Automation (Imported Excel)</h1>
+                    <p class="text-slate-500 dark:text-slate-400">Review and validate your bulk records before processing.</p>
+                </div>
+                <div class="flex gap-3">
+                    <div class="relative">
+                        <button onclick="toggleAutomationFilterMenu(event)" class="flex items-center justify-center rounded-xl px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-sm font-medium btn-premium-outline transition-all">
+                            <span class="material-symbols-outlined mr-2 text-[20px]">tune</span> Filters
+                        </button>
+                        <!-- Automation Filter Menu -->
+                        <div id="automationFilterMenu" class="hidden absolute right-0 mt-2 w-56 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl z-[60] py-2 animate-slide-down">
+                            <div class="px-3 py-1 text-xs font-bold text-slate-400 uppercase tracking-widest">Customer Category</div>
+                            <button onclick="setAutomationFilter('All')" class="w-full text-left px-4 py-2 text-sm hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center justify-between">
+                                All Categories <span id="check-auto-All" class="material-symbols-outlined text-primary text-[18px]">check</span>
+                            </button>
+                            <button onclick="setAutomationFilter('Enterprise')" class="w-full text-left px-4 py-2 text-sm hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center justify-between">
+                                <div class="flex items-center gap-2">Enterprise</div>
+                                <span id="check-auto-Enterprise" class="hidden material-symbols-outlined text-primary text-[18px]">check</span>
+                            </button>
+                            <button onclick="setAutomationFilter('Mid-Market')" class="w-full text-left px-4 py-2 text-sm hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center justify-between">
+                                <div class="flex items-center gap-2">Mid-Market</div>
+                                <span id="check-auto-Mid-Market" class="hidden material-symbols-outlined text-primary text-[18px]">check</span>
+                            </button>
+                            <button onclick="setAutomationFilter('High Value')" class="w-full text-left px-4 py-2 text-sm hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center justify-between">
+                                <div class="flex items-center gap-2">High Value</div>
+                                <span id="check-auto-High Value" class="hidden material-symbols-outlined text-primary text-[18px]">check</span>
+                            </button>
+                            <button onclick="setAutomationFilter('Strategic')" class="w-full text-left px-4 py-2 text-sm hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center justify-between">
+                                <div class="flex items-center gap-2">Strategic</div>
+                                <span id="check-auto-Strategic" class="hidden material-symbols-outlined text-primary text-[18px]">check</span>
+                            </button>
+                        </div>
+                    </div>
+                    <button onclick="handleAutomate()" class="flex items-center justify-center rounded-xl px-6 py-2.5 text-white text-sm font-medium transition-all hover:scale-105 active:scale-95 btn-premium-emerald btn-glow-emerald">
+                        <span class="material-symbols-outlined mr-2 text-[20px]">bolt</span> Automate
+                    </button>
+                </div>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+                <div class="stat-card animate-fade-in-up stagger-1 flex flex-col gap-1 p-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                    <div class="flex justify-between items-start">
+                        <p class="text-slate-500 dark:text-slate-400 text-sm font-medium uppercase tracking-wider">Total Rows</p>
+                        <span class="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-xl text-primary material-symbols-outlined text-[20px]">table_rows</span>
+                    </div>
+                    <p class="text-slate-900 dark:text-white tracking-tight text-3xl font-bold leading-tight mt-1 counter" id="stat-total">1,240</p>
+                    <p class="text-xs text-slate-400 mt-1">Found in active sheet</p>
+                </div>
+
+                <div class="stat-card animate-fade-in-up stagger-2 flex flex-col gap-1 p-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                    <div class="flex justify-between items-start">
+                        <p class="text-slate-500 dark:text-slate-400 text-sm font-medium uppercase tracking-wider">Validated</p>
+                        <span class="p-2 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl text-emerald-custom material-symbols-outlined text-[20px]">verified</span>
+                    </div>
+                    <p class="text-slate-900 dark:text-white tracking-tight text-3xl font-bold leading-tight mt-1 counter" id="stat-validated">856</p>
+                    <p class="text-xs text-slate-400 mt-1">Ready for import</p>
+                </div>
+
+                <div class="stat-card animate-fade-in-up stagger-3 flex flex-col gap-1 p-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                    <div class="flex justify-between items-start">
+                        <p class="text-slate-500 dark:text-slate-400 text-sm font-medium uppercase tracking-wider">Pending</p>
+                        <span class="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-xl text-amber-600 material-symbols-outlined text-[20px]">hourglass_empty</span>
+                    </div>
+                    <p class="text-slate-900 dark:text-white tracking-tight text-3xl font-bold leading-tight mt-1 counter" id="stat-pending">384</p>
+                    <p class="text-xs text-slate-400 mt-1">Awaiting manual check</p>
+                </div>
+
+                <div class="stat-card animate-fade-in-up stagger-4 flex flex-col gap-1 p-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                    <div class="flex justify-between items-start">
+                        <p class="text-slate-500 dark:text-slate-400 text-sm font-medium uppercase tracking-wider">Auto-Tagged</p>
+                        <span class="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-xl text-purple-600 material-symbols-outlined text-[20px]">label_important</span>
+                    </div>
+                    <p class="text-slate-900 dark:text-white tracking-tight text-3xl font-bold leading-tight mt-1 counter" id="stat-tagged">1,102</p>
+                    <p class="text-xs text-slate-400 mt-1">Identified by AI</p>
+                </div>
+            </div>
+
+            <!-- Automation DataTable -->
+            <div class="premium-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 overflow-hidden shadow-lg rounded-[14px] animate-fade-in-up stagger-5">
+                <div class="p-6 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                    <h2 class="text-lg font-bold text-slate-900 dark:text-white">Excel Records List</h2>
+                    <div class="flex items-center gap-2">
+                        <span class="size-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <span class="text-xs font-medium text-slate-500 uppercase tracking-widest">Live Preview</span>
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="premium-table w-full text-left">
+                        <thead>
+                            <tr class="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider font-bold">
+                                <th class="px-6 py-4">Excel ID</th>
+                                <th class="px-6 py-4">Name</th>
+                                <th class="px-6 py-4">Email Address</th>
+                                <th class="px-6 py-4">Phone</th>
+                                <th class="px-6 py-4">Target Customer</th>
+                                <th class="px-6 py-4 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="automationTableBody" class="divide-y divide-slate-100 dark:divide-slate-800">
+                            <!-- Dynamic rows will be inserted here -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="p-4 border-t border-slate-200 dark:border-slate-800 text-center bg-slate-50/30">
+                    <button class="text-primary text-sm font-semibold hover:underline">Load More Records</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="premium-toast hidden fixed bottom-6 right-6 bg-emerald-500 text-white px-6 py-4 rounded-lg shadow-2xl flex items-center gap-3 z-50">
+        <span class="material-symbols-outlined">check_circle</span>
+        <span id="toastMessage">Automation started successfully!</span>
+    </div>
+
+    <script src="script.js?v=2.1"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof initAutomationPage === 'function') {
+                initAutomationPage();
+            }
+        });
+    </script>
+</body>
+</html>

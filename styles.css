@@ -587,3 +587,17 @@ input[type="checkbox"]:indeterminate {
     left: 50%;
     transform: translate(-50%, -50%);
 }
+
+.animate-slide-down {
+    animation: slideDown 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* Fix stacking context for page headers to keep dropdowns on top */
+.layout-container main>div:first-child {
+    position: relative;
+    z-index: 50;
+}
+
+.stat-card:hover .counter {
+    animation: subtlePulse 2s ease-in-out infinite;
+}
