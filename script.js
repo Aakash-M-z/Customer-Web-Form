@@ -1,4 +1,3 @@
-// Modal Functions
 function openCustomerModal() {
     document.getElementById('customerModal').classList.remove('hidden');
     document.body.style.overflow = 'hidden';
@@ -12,7 +11,7 @@ function closeCustomerModal() {
     document.getElementById('fileInfo').textContent = 'Accepted formats: PDF, XLSX, XLS';
 }
 
-// Automate Modal Functions
+
 function openAutomateModal() {
     document.getElementById('automateModal').classList.remove('hidden');
     document.body.style.overflow = 'hidden';
@@ -260,7 +259,158 @@ document.addEventListener('DOMContentLoaded', function () {
     if (document.getElementById('recentCustomersTable')) {
         loadCustomers();
     }
+
+    // Initialize Charts if on index.html
+    if (document.getElementById('growthChart') || document.getElementById('statusChart')) {
+        initCharts();
+    }
 });
+
+function getCustomerStatusCounts() {
+    const customers = JSON.parse(localStorage.getItem('customers') || '[]');
+    const counts = { Active: 0, Pending: 0, Inactive: 0 };
+
+    // Add dummy data for visual balance if empty
+    if (customers.length === 0) {
+        return [65, 25, 10];
+    }
+
+    customers.forEach(c => {
+        if (counts[c.status] !== undefined) {
+            counts[c.status]++;
+        }
+    });
+
+    return [counts.Active, counts.Pending, counts.Inactive];
+}
+
+// Chart Initialization
+function initCharts() {
+    const isDark = document.documentElement.classList.contains('dark');
+    const primaryColor = '#2563eb';
+    const emeraldColor = '#059669';
+    const amberColor = '#d97706';
+    const redColor = '#dc2626';
+    const textColor = isDark ? '#94a3b8' : '#64748b';
+    const gridColor = isDark ? 'rgba(148, 163, 184, 0.1)' : 'rgba(100, 116, 139, 0.1)';
+
+    const statusData = getCustomerStatusCounts();
+
+    // Growth Chart (Line)
+    const growthCtx = document.getElementById('growthChart')?.getContext('2d');
+    if (growthCtx) {
+        new Chart(growthCtx, {
+            type: 'line',
+            data: {
+                labels: ['Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar'],
+                datasets: [{
+                    label: 'New Customers',
+                    data: [45, 59, 80, 81, 96, 120],
+                    borderColor: primaryColor,
+                    backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 4,
+                    pointBackgroundColor: primaryColor,
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointHoverRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        padding: 12,
+                        backgroundColor: isDark ? '#1e293b' : '#fff',
+                        titleColor: isDark ? '#f1f5f9' : '#1e293b',
+                        bodyColor: isDark ? '#94a3b8' : '#64748b',
+                        borderColor: gridColor,
+                        borderWidth: 1,
+                        usePointStyle: true,
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            color: textColor,
+                            font: { size: 11, weight: '500' }
+                        }
+                    },
+                    y: {
+                        grid: {
+                            color: gridColor,
+                            drawBorder: false
+                        },
+                        ticks: {
+                            color: textColor,
+                            font: { size: 11, weight: '500' },
+                            stepSize: 30
+                        }
+                    }
+                },
+                interaction: {
+                    mode: 'nearest',
+                    axis: 'x',
+                    intersect: false
+                }
+            }
+        });
+    }
+
+    // Status Chart (Pie/Doughnut)
+    const statusCtx = document.getElementById('statusChart')?.getContext('2d');
+    if (statusCtx) {
+        new Chart(statusCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Active', 'Pending', 'Inactive'],
+                datasets: [{
+                    data: statusData,
+                    backgroundColor: [emeraldColor, amberColor, redColor],
+                    hoverOffset: 15,
+                    borderWidth: 0,
+                    borderRadius: 5,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '75%',
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 20,
+                            usePointStyle: true,
+                            font: { size: 12, weight: '600' },
+                            color: textColor
+                        }
+                    },
+                    tooltip: {
+                        padding: 12,
+                        backgroundColor: isDark ? '#1e293b' : '#fff',
+                        titleColor: isDark ? '#f1f5f9' : '#1e293b',
+                        bodyColor: isDark ? '#94a3b8' : '#64748b',
+                        borderColor: gridColor,
+                        borderWidth: 1,
+                        displayColors: false
+                    }
+                }
+            }
+        });
+    }
+}
 
 // --- NEW ENHANCEMENTS START HERE ---
 

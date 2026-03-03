@@ -109,13 +109,14 @@
     }
 }
 
-/* Card Enhancements */
+/* Card Enhancements - SaaS Design */
 .premium-card {
-    border-radius: 20px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 16px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03), 0 10px 15px -3px rgba(0, 0, 0, 0.03);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     overflow: hidden;
+    border: 1px solid rgba(226, 232, 240, 0.5);
 }
 
 .premium-card::before {
@@ -140,16 +141,17 @@
 
 /* Stat Card Specific */
 .stat-card {
-    border-radius: 18px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 16px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     border: 1px solid rgba(226, 232, 240, 0.8);
+    background: white;
 }
 
 .stat-card:hover {
-    transform: translateY(-6px) scale(1.02);
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.1);
-    border-color: rgba(37, 99, 235, 0.3);
+    transform: translateY(-5px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
+    border-color: #2563eb;
 }
 
 /* Button Enhancements */
@@ -266,7 +268,7 @@
 
 .premium-modal-content {
     animation: slideDown 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    border-radius: 24px;
+    border-radius: 16px;
     box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
 }
 
@@ -301,6 +303,8 @@ input[type="checkbox"]:checked {
 .premium-header {
     backdrop-filter: blur(20px);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    z-index: 100 !important;
+    /* Ensure header is always on top */
 }
 
 /* Icon Hover */
@@ -592,10 +596,10 @@ input[type="checkbox"]:indeterminate {
     animation: slideDown 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
-/* Fix stacking context for page headers to keep dropdowns on top */
+/* Fix stacking context for page headers */
 .layout-container main>div:first-child {
     position: relative;
-    z-index: 50;
+    z-index: 10;
 }
 
 .stat-card:hover .counter {

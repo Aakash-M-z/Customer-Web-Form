@@ -37,40 +37,42 @@
 <body class="font-sans bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 mesh-gradient min-h-screen">
     <div class="layout-container flex h-full grow flex-col">
         <!-- Top Navigation -->
-        <header class="premium-header flex items-center justify-between whitespace-nowrap border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md px-6 md:px-10 py-3 sticky top-0 z-50">
-            <div class="flex items-center gap-8">
-                <div class="flex items-center gap-3 text-primary">
-                    <div class="size-8 bg-primary rounded-lg flex items-center justify-center text-white">
-                        <span class="material-symbols-outlined">analytics</span>
-                    </div>
-                    <h2 class="text-slate-900 dark:text-white text-xl font-semibold leading-tight tracking-tight">Customer Portal</h2>
-                </div>
-                <div class="hidden lg:flex items-center">
-                    <label class="flex flex-col min-w-64 h-10">
-                        <div class="flex w-full flex-1 items-stretch rounded-xl h-full bg-slate-100 dark:bg-slate-800">
-                            <div class="text-slate-500 flex items-center justify-center pl-4">
-                                <span class="material-symbols-outlined text-[20px]">search</span>
-                            </div>
-                            <input id="globalSearch" class="form-input flex w-full min-w-0 flex-1 border-none bg-transparent focus:ring-0 text-sm font-normal placeholder:text-slate-500" placeholder="Search customers..." oninput="handleSearch(this.value)"/>
+        <header class="premium-header border-b border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md sticky top-0 z-[100]">
+            <div class="max-w-[1400px] mx-auto w-full px-6 md:px-10 py-3 flex items-center justify-between gap-4">
+                <div class="flex items-center gap-8 shrink-0">
+                    <div class="flex items-center gap-3 text-primary">
+                        <div class="size-8 bg-primary rounded-lg flex items-center justify-center text-white shrink-0">
+                            <span class="material-symbols-outlined">analytics</span>
                         </div>
-                    </label>
+                        <h2 class="text-slate-900 dark:text-white text-xl font-semibold leading-tight tracking-tight hidden sm:block">Customer Portal</h2>
+                    </div>
+                    <div class="hidden lg:flex items-center shrink-0">
+                        <label class="flex flex-col min-w-64 h-10">
+                            <div class="flex w-full flex-1 items-stretch rounded-xl h-full bg-slate-100 dark:bg-slate-800">
+                                <div class="text-slate-500 flex items-center justify-center pl-4">
+                                    <span class="material-symbols-outlined text-[20px]">search</span>
+                                </div>
+                                <input id="globalSearch" class="form-input flex w-full min-w-0 flex-1 border-none bg-transparent focus:ring-0 text-sm font-normal placeholder:text-slate-500" placeholder="Search customers..." oninput="handleSearch(this.value)"/>
+                            </div>
+                        </label>
+                    </div>
                 </div>
-            </div>
-            <div class="flex flex-1 justify-end gap-6 items-center">
-                <nav class="hidden md:flex items-center gap-6">
-                    <a class="text-slate-600 dark:text-slate-400 text-sm font-medium hover:text-primary transition-colors" href="index.html">Dashboard</a>
-                    <a class="text-primary text-sm font-semibold border-b-2 border-primary pb-1" href="customers.html">Customers</a>
-                    <a class="text-slate-600 dark:text-slate-400 text-sm font-medium hover:text-primary transition-colors" href="automations.html">Automation</a>
-                    <a class="text-slate-600 dark:text-slate-400 text-sm font-medium hover:text-primary transition-colors" href="#">Settings</a>
-                </nav>
-                <div class="flex gap-3">
-                    <button class="relative flex items-center justify-center rounded-xl size-10 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all icon-hover">
-                        <span class="material-symbols-outlined">notifications</span>
-                        <span class="absolute top-2 right-2 size-2 bg-red-500 rounded-full border-2 border-white dark:border-slate-900"></span>
-                    </button>
-                    <div class="h-10 w-[1px] bg-slate-200 dark:bg-slate-800 mx-1"></div>
-                    <div class="flex items-center gap-3 pl-2">
-                        <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border-2 border-primary/20" style='background-image: url("https://ui-avatars.com/api/?name=Admin+User&background=2563eb&color=fff");'></div>
+                <div class="flex flex-1 justify-end gap-6 items-center min-w-0">
+                    <nav class="hidden md:flex items-center gap-6 shrink overflow-hidden">
+                        <a class="text-slate-600 dark:text-slate-400 text-sm font-medium hover:text-primary transition-colors shrink-0" href="index.html">Dashboard</a>
+                        <a class="text-primary text-sm font-semibold border-b-2 border-primary pb-1 shrink-0" href="customers.html">Customers</a>
+                        <a class="text-slate-600 dark:text-slate-400 text-sm font-medium hover:text-primary transition-colors shrink-0" href="automations.html">Automation</a>
+                        <a class="text-slate-600 dark:text-slate-400 text-sm font-medium hover:text-primary transition-colors shrink-0" href="#">Settings</a>
+                    </nav>
+                    <div class="flex gap-3 items-center shrink-0">
+                        <button class="relative flex items-center justify-center rounded-xl size-10 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all icon-hover">
+                            <span class="material-symbols-outlined">notifications</span>
+                            <span class="absolute top-2 right-2 size-2 bg-red-500 rounded-full border-2 border-white dark:border-slate-900"></span>
+                        </button>
+                        <div class="h-8 w-[1px] bg-slate-200 dark:bg-slate-800 mx-1"></div>
+                        <div class="flex items-center gap-3">
+                            <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border-2 border-primary/20 shrink-0" style='background-image: url("https://ui-avatars.com/api/?name=Admin+User&background=2563eb&color=fff");'></div>
+                        </div>
                     </div>
                 </div>
             </div>
