@@ -357,6 +357,10 @@ function getCustomerStatusCounts() {
     return [counts.Active, counts.Pending, counts.Inactive];
 }
 
+// Global chart instances to prevent 'Canvas in use' errors
+let growthChartInstance = null;
+let statusChartInstance = null;
+
 // Chart Initialization
 function initCharts() {
     const isDark = document.documentElement.classList.contains('dark');
@@ -370,9 +374,14 @@ function initCharts() {
     const statusData = getCustomerStatusCounts();
 
     // Growth Chart (Line)
-    const growthCtx = document.getElementById('growthChart')?.getContext('2d');
-    if (growthCtx) {
-        new Chart(growthCtx, {
+    const growthCanvas = document.getElementById('growthChart');
+    if (growthCanvas) {
+        if (growthChartInstance) {
+            growthChartInstance.destroy();
+        }
+
+        const growthCtx = growthCanvas.getContext('2d');
+        growthChartInstance = new Chart(growthCtx, {
             type: 'line',
             data: {
                 labels: ['Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar'],
@@ -442,9 +451,14 @@ function initCharts() {
     }
 
     // Status Chart (Pie/Doughnut)
-    const statusCtx = document.getElementById('statusChart')?.getContext('2d');
-    if (statusCtx) {
-        new Chart(statusCtx, {
+    const statusCanvas = document.getElementById('statusChart');
+    if (statusCanvas) {
+        if (statusChartInstance) {
+            statusChartInstance.destroy();
+        }
+
+        const statusCtx = statusCanvas.getContext('2d');
+        statusChartInstance = new Chart(statusCtx, {
             type: 'doughnut',
             data: {
                 labels: ['Active', 'Pending', 'Inactive'],
@@ -634,14 +648,8 @@ function renderCustomerTable(page) {
             </td>
             <td class="px-6 py-4 text-right">
                 <div class="flex justify-end gap-2">
-                    <button onclick="handleUploadClick()" class="p-1.5 rounded-lg text-slate-400 hover:text-primary hover:bg-primary/10 transition-all">
-                        <span class="material-symbols-outlined text-[18px]">upload</span>
-                    </button>
-                    <button onclick="handleDeleteRow('${customer.id}')" class="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50/50 transition-all">
-                        <span class="material-symbols-outlined text-[18px]">delete</span>
-                    </button>
-                    <button onclick="handleMoreActions(event, '${customer.id}')" class="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
-                        <span class="material-symbols-outlined text-[18px]">more_vert</span>
+                    <button onclick="handleMoreActions(event, '${customer.id}', 'customer')" class="p-1.5 rounded-lg text-slate-400 hover:text-primary hover:bg-primary/10 transition-all">
+                        <span class="material-symbols-outlined text-[18px]">more_horiz</span>
                     </button>
                 </div>
             </td>
@@ -707,18 +715,20 @@ function initActionDropdown() {
             <span class="material-symbols-outlined">mail</span> Send Email
         </button>
         <div class="dropdown-divider"></div>
-        <button class="dropdown-item text-red-500" onclick="handleAction('archive')">
-            <span class="material-symbols-outlined">archive</span> Archive Record
+        <button class="dropdown-item text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20" onclick="handleAction('delete')">
+            <span class="material-symbols-outlined">delete</span> Delete Record
         </button>
     `;
     document.body.appendChild(dropdown);
 }
 
 let activeActionId = null;
+let activeActionType = 'customer';
 
-function handleMoreActions(event, id) {
+function handleMoreActions(event, id, type = 'customer') {
     event.stopPropagation();
     activeActionId = id;
+    activeActionType = type;
 
     const dropdown = document.getElementById('actionDropdown');
     if (!dropdown) return;
@@ -729,13 +739,17 @@ function handleMoreActions(event, id) {
     const rect = event.currentTarget.getBoundingClientRect();
     const dropdownRect = dropdown.getBoundingClientRect();
 
-    let top = rect.bottom + window.scrollY;
-    let left = rect.right - dropdownRect.width + window.scrollX;
+    // Fixed position element, so we use rect directly without window.scrollY
+    let top = rect.bottom + 4;
+    let left = rect.right - dropdownRect.width;
 
     // Check if dropdown goes off-screen vertically
-    if (top + dropdownRect.height > window.innerHeight + window.scrollY) {
-        top = rect.top - dropdownRect.height + window.scrollY;
+    if (top + dropdownRect.height > window.innerHeight) {
+        top = rect.top - dropdownRect.height - 4;
     }
+
+    // Horizontal safety check
+    if (left < 10) left = 10;
 
     dropdown.style.top = `${top}px`;
     dropdown.style.left = `${left}px`;
@@ -770,6 +784,9 @@ function handleAction(type) {
         case 'email':
             showToast(`Launching email client...`);
             window.location.href = `mailto:customer@example.com?subject=Inquiry for ${activeActionId}`;
+            break;
+        case 'delete':
+            openDeleteModal(activeActionId, activeActionType);
             break;
         case 'archive':
             showToast(`Archiving record: ${activeActionId}...`);
@@ -882,14 +899,9 @@ function renderAutomationTable() {
                 </span>
             </td>
             <td class="px-6 py-4 text-right">
-                <div class="flex justify-end gap-2">
-                    <button onclick="openDeleteModal('${item.excelId}', 'automation')" class="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50/50 transition-all">
-                        <span class="material-symbols-outlined text-[18px]">delete</span>
-                    </button>
-                    <button onclick="handleMoreActions(event, '${item.excelId}')" class="p-1.5 rounded-lg text-slate-400 hover:text-secondary transition-all">
-                        <span class="material-symbols-outlined text-[18px]">more_horiz</span>
-                    </button>
-                </div>
+                <button onclick="handleMoreActions(event, '${item.excelId}', 'automation')" class="p-1.5 rounded-lg text-slate-400 hover:text-primary hover:bg-primary/10 transition-all">
+                    <span class="material-symbols-outlined text-[18px]">more_horiz</span>
+                </button>
             </td>
         `;
         tbody.appendChild(row);
@@ -1006,10 +1018,7 @@ function addCustomerToTable(customer) {
             </td>
             <td class="px-6 py-4 text-right">
                 <div class="flex justify-end gap-1">
-                    <button class="action-icon text-slate-400 hover:text-red-500 transition-colors" onclick="deleteCustomer('${customer.id}')" title="Delete">
-                        <span class="material-symbols-outlined text-[20px]">delete</span>
-                    </button>
-                    <button class="action-icon text-slate-400 hover:text-primary transition-colors" onclick="handleMoreActions(event, '${customer.id}')" title="More Actions">
+                    <button class="action-icon text-slate-400 hover:text-primary transition-colors" onclick="handleMoreActions(event, '${customer.id}', 'customer')" title="More Actions">
                         <span class="material-symbols-outlined text-[20px]">more_horiz</span>
                     </button>
                 </div>
@@ -1059,7 +1068,7 @@ function loadCustomers() {
                     </span>
                 </td>
                 <td class="px-6 py-4 text-right">
-                    <button class="action-icon text-slate-400 hover:text-primary transition-colors" onclick="handleMoreActions(event, '${customer.id}')">
+                    <button class="action-icon text-slate-400 hover:text-primary transition-colors" onclick="handleMoreActions(event, '${customer.id}', 'customer')">
                         <span class="material-symbols-outlined">more_horiz</span>
                     </button>
                 </td>
