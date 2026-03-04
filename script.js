@@ -24,31 +24,68 @@ function closeAutomateModal() {
     document.getElementById('otherRevisionInput').classList.add('hidden');
 }
 
-// Delete Modal Functions
-let customerToDelete = null;
+let itemToDelete = null;
+let deleteType = 'customer';
 
-function openDeleteModal(customerId) {
-    customerToDelete = customerId;
-    document.getElementById('deleteModal').classList.remove('hidden');
-    document.body.style.overflow = 'hidden';
+function openDeleteModal(id, type = 'customer') {
+    itemToDelete = id;
+    deleteType = type;
+
+    const modal = document.getElementById('deleteModal');
+    if (modal) {
+        const title = modal.querySelector('h3');
+        const text = modal.querySelector('.p-6 p');
+
+        if (title && text) {
+            title.textContent = type === 'customer' ? 'Delete Customer' : 'Delete Record';
+            text.textContent = type === 'customer'
+                ? 'Are you sure you want to delete this customer? This action cannot be undone.'
+                : 'Are you sure you want to remove this record from the automation list?';
+        }
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
 }
 
 function closeDeleteModal() {
-    document.getElementById('deleteModal').classList.add('hidden');
+    const modal = document.getElementById('deleteModal');
+    if (modal) modal.classList.add('hidden');
     document.body.style.overflow = 'auto';
-    customerToDelete = null;
+    itemToDelete = null;
 }
 
 function confirmDelete() {
-    if (customerToDelete) {
-        let customers = JSON.parse(localStorage.getItem('customers') || '[]');
-        customers = customers.filter(c => c.id !== customerToDelete);
-        localStorage.setItem('customers', JSON.stringify(customers));
+    if (itemToDelete) {
+        if (deleteType === 'customer') {
+            // Local Storage check for index.html/dashboard
+            let customers = JSON.parse(localStorage.getItem('customers') || '[]');
+            const initialLength = customers.length;
+            customers = customers.filter(c => c.id !== itemToDelete);
 
-        // Reload table
-        loadCustomers();
+            if (customers.length !== initialLength) {
+                localStorage.setItem('customers', JSON.stringify(customers));
+                if (typeof loadCustomers === 'function') loadCustomers();
+            }
 
-        showToast('Customer deleted successfully!');
+            // Memory array check for customers.html dummy data
+            if (typeof allCustomers !== 'undefined' && allCustomers.length > 0) {
+                allCustomers = allCustomers.filter(c => c.id !== itemToDelete);
+                if (typeof filteredCustomers !== 'undefined') {
+                    filteredCustomers = filteredCustomers.filter(c => c.id !== itemToDelete);
+                }
+                if (typeof renderCustomerTable === 'function') renderCustomerTable(currentPage);
+            }
+            showToast('Customer deleted successfully!');
+        } else if (deleteType === 'automation') {
+            if (typeof allAutomations !== 'undefined') {
+                allAutomations = allAutomations.filter(a => a.excelId !== itemToDelete);
+                if (typeof filteredAutomations !== 'undefined') {
+                    filteredAutomations = filteredAutomations.filter(a => a.excelId !== itemToDelete);
+                }
+                if (typeof renderAutomationTable === 'function') renderAutomationTable();
+            }
+            showToast('Automation record removed!');
+        }
         closeDeleteModal();
     }
 }
@@ -111,48 +148,84 @@ function removeFile(index) {
     handleFileSelect({ target: fileInput });
 }
 
-// Form Submission
 document.addEventListener('DOMContentLoaded', function () {
-    // Load existing customers on page load
-    loadCustomers();
+    // Set active nav link
+    const currentPath = window.location.pathname.split('/').pop() || 'index.html';
+    document.querySelectorAll('nav a').forEach(link => {
+        if (link.getAttribute('href') === currentPath) {
+            link.classList.add('nav-active');
+        } else {
+            link.classList.remove('nav-active');
+        }
+    });
 
-    // Form Submission
+    // Global click handler for closing menus
+    document.addEventListener('click', (e) => {
+        const filterMenu = document.getElementById('filterMenu');
+        const autoFilterMenu = document.getElementById('automationFilterMenu');
+
+        if (filterMenu && !filterMenu.contains(e.target) && !e.target.closest('button[onclick*="toggleFilterMenu"]')) {
+            filterMenu.classList.add('hidden');
+        }
+        if (autoFilterMenu && !autoFilterMenu.contains(e.target) && !e.target.closest('button[onclick*="toggleAutomationFilterMenu"]')) {
+            autoFilterMenu.classList.add('hidden');
+        }
+        const actionDropdown = document.getElementById('actionDropdown');
+        if (actionDropdown && !actionDropdown.contains(e.target) && !e.target.closest('button[onclick*="handleMoreActions"]')) {
+            actionDropdown.style.display = 'none';
+        }
+    });
+
+    // Load elements ONLY if on their respective pages
+    if (document.getElementById('recentCustomersBody')) loadCustomers();
+    if (document.getElementById('automationTableBody')) initAutomationPage();
+
+    initActionDropdown();
+
+    // Chart.js initialization
+    if (document.getElementById('growthChart') || document.getElementById('statusChart')) {
+        initCharts();
+    }
+
     const customerForm = document.getElementById('customerForm');
     if (customerForm) {
         customerForm.addEventListener('submit', function (e) {
             e.preventDefault();
+            const submitBtn = e.target.querySelector('button[type="submit"]');
 
-            const formData = {
-                id: '#' + String(Date.now()).slice(-5),
-                clientName: document.getElementById('clientName').value,
-                purchaseOrder: document.getElementById('purchaseOrder').value,
-                salesOrder: document.getElementById('salesOrder').value,
-                emailAddress: document.getElementById('emailAddress').value,
-                phoneNumber: document.getElementById('phoneNumber').value,
-                numDocuments: document.getElementById('numDocuments').value,
-                status: document.getElementById('status').value,
-                markAsNew: document.getElementById('markAsNew').checked,
-                files: document.getElementById('fileUpload').files.length,
-                timestamp: new Date().toLocaleString()
-            };
+            withLoading(submitBtn, async () => {
+                const formData = {
+                    id: '#' + String(Date.now()).slice(-5),
+                    clientName: document.getElementById('clientName').value,
+                    purchaseOrder: document.getElementById('purchaseOrder').value,
+                    salesOrder: document.getElementById('salesOrder').value,
+                    emailAddress: document.getElementById('emailAddress').value,
+                    phoneNumber: document.getElementById('phoneNumber').value,
+                    numDocuments: document.getElementById('numDocuments').value,
+                    status: document.getElementById('status').value,
+                    markAsNew: document.getElementById('markAsNew').checked,
+                    files: document.getElementById('fileUpload').files.length,
+                    timestamp: new Date().toLocaleString()
+                };
 
-            // Store in localStorage
-            let customers = JSON.parse(localStorage.getItem('customers') || '[]');
-            customers.unshift(formData); // Add to beginning of array
-            localStorage.setItem('customers', JSON.stringify(customers));
+                // Store in localStorage
+                let customers = JSON.parse(localStorage.getItem('customers') || '[]');
+                customers.unshift(formData); // Add to beginning of array
+                localStorage.setItem('customers', JSON.stringify(customers));
 
-            // Add to table immediately if possible
-            if (document.querySelector('.premium-table tbody')) {
-                addCustomerToTable(formData);
-            }
+                // Add to table immediately if possible
+                if (document.querySelector('.premium-table tbody')) {
+                    addCustomerToTable(formData);
+                }
 
-            // Show toast
-            showToast('Customer added successfully!');
+                // Show toast
+                showToast('Customer added successfully!');
 
-            // Close modal
-            closeCustomerModal();
+                // Close modal
+                closeCustomerModal();
 
-            console.log('Customer data saved:', formData);
+                console.log('Customer data saved:', formData);
+            });
         });
     }
 
@@ -567,7 +640,7 @@ function renderCustomerTable(page) {
                     <button onclick="handleDeleteRow('${customer.id}')" class="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50/50 transition-all">
                         <span class="material-symbols-outlined text-[18px]">delete</span>
                     </button>
-                    <button class="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                    <button onclick="handleMoreActions(event, '${customer.id}')" class="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
                         <span class="material-symbols-outlined text-[18px]">more_vert</span>
                     </button>
                 </div>
@@ -614,17 +687,124 @@ function updatePaginationUI() {
 }
 
 // Action Handlers
-function handleUploadClick() {
-    document.getElementById('demoUploadInput').click();
+function initActionDropdown() {
+    if (document.getElementById('actionDropdown')) return;
+
+    const dropdown = document.createElement('div');
+    dropdown.id = 'actionDropdown';
+    dropdown.className = 'dropdown-menu';
+    dropdown.innerHTML = `
+        <button class="dropdown-item" onclick="handleAction('view')">
+            <span class="material-symbols-outlined">visibility</span> View Full Details
+        </button>
+        <button class="dropdown-item" onclick="handleAction('edit')">
+            <span class="material-symbols-outlined">edit_note</span> Edit Record
+        </button>
+        <button class="dropdown-item" onclick="handleAction('pdf')">
+            <span class="material-symbols-outlined">picture_as_pdf</span> Download PDF
+        </button>
+        <button class="dropdown-item" onclick="handleAction('email')">
+            <span class="material-symbols-outlined">mail</span> Send Email
+        </button>
+        <div class="dropdown-divider"></div>
+        <button class="dropdown-item text-red-500" onclick="handleAction('archive')">
+            <span class="material-symbols-outlined">archive</span> Archive Record
+        </button>
+    `;
+    document.body.appendChild(dropdown);
+}
+
+let activeActionId = null;
+
+function handleMoreActions(event, id) {
+    event.stopPropagation();
+    activeActionId = id;
+
+    const dropdown = document.getElementById('actionDropdown');
+    if (!dropdown) return;
+
+    // Show it so we can calculate dimensions
+    dropdown.style.display = 'block';
+
+    const rect = event.currentTarget.getBoundingClientRect();
+    const dropdownRect = dropdown.getBoundingClientRect();
+
+    let top = rect.bottom + window.scrollY;
+    let left = rect.right - dropdownRect.width + window.scrollX;
+
+    // Check if dropdown goes off-screen vertically
+    if (top + dropdownRect.height > window.innerHeight + window.scrollY) {
+        top = rect.top - dropdownRect.height + window.scrollY;
+    }
+
+    dropdown.style.top = `${top}px`;
+    dropdown.style.left = `${left}px`;
+}
+
+function handleLoadMore() {
+    // If the user refers to a "Load More" action, we ensure pagination or list expansion works
+    showToast('Loading additional records...');
+    setTimeout(() => {
+        if (typeof renderCustomerTable === 'function') {
+            itemsPerPage += 10;
+            renderCustomerTable(currentPage);
+        }
+    }, 800);
+}
+
+function handleAction(type) {
+    const dropdown = document.getElementById('actionDropdown');
+    dropdown.style.display = 'none';
+
+    switch (type) {
+        case 'view':
+            showToast(`Loading details for: ${activeActionId}`);
+            break;
+        case 'edit':
+            showToast(`Opening editor for: ${activeActionId}`);
+            break;
+        case 'pdf':
+            showToast(`Generating PDF for: ${activeActionId}...`);
+            setTimeout(() => showToast(`PDF downloaded!`), 1500);
+            break;
+        case 'email':
+            showToast(`Launching email client...`);
+            window.location.href = `mailto:customer@example.com?subject=Inquiry for ${activeActionId}`;
+            break;
+        case 'archive':
+            showToast(`Archiving record: ${activeActionId}...`);
+            setTimeout(() => {
+                // Remove from all arrays
+                if (typeof allCustomers !== 'undefined') allCustomers = allCustomers.filter(c => c.id !== activeActionId);
+                if (typeof filteredCustomers !== 'undefined') filteredCustomers = filteredCustomers.filter(c => c.id !== activeActionId);
+                if (typeof allAutomations !== 'undefined') allAutomations = allAutomations.filter(a => a.excelId !== activeActionId);
+                if (typeof filteredAutomations !== 'undefined') filteredAutomations = filteredAutomations.filter(a => a.excelId !== activeActionId);
+
+                // Remove from localStorage
+                let stored = JSON.parse(localStorage.getItem('customers') || '[]');
+                if (stored.some(c => c.id === activeActionId)) {
+                    stored = stored.filter(c => c.id !== activeActionId);
+                    localStorage.setItem('customers', JSON.stringify(stored));
+                }
+
+                // Update UIs
+                if (document.getElementById('recentCustomersBody')) loadCustomers();
+                if (typeof renderCustomerTable === 'function') renderCustomerTable(currentPage);
+                if (typeof renderAutomationTable === 'function') renderAutomationTable();
+
+                // Update Charts
+                if (document.getElementById('growthChart') || document.getElementById('statusChart')) {
+                    if (typeof initCharts === 'function') initCharts();
+                }
+
+                showToast(`Record ${activeActionId} archived!`);
+            }, 800);
+            break;
+    }
 }
 
 function handleDeleteRow(id) {
-    if (confirm('Are you sure you want to delete this customer?')) {
-        allCustomers = allCustomers.filter(c => c.id !== id);
-        filteredCustomers = filteredCustomers.filter(c => c.id !== id);
-        renderCustomerTable(currentPage);
-        showToast('Customer removed from directory');
-    }
+    openDeleteModal(id, 'customer');
 }
 
 // Automation Page Initialization
@@ -689,6 +869,9 @@ function renderAutomationTable() {
         const row = document.createElement('tr');
         row.className = 'hover:bg-blue-50/50 dark:hover:bg-blue-900/10 transition-colors group';
         row.innerHTML = `
+            <td class="px-6 py-4">
+                <input type="checkbox" class="excel-row-checkbox w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary focus:ring-2 cursor-pointer" onchange="updateSelectAllCheckbox()">
+            </td>
             <td class="px-6 py-4 text-sm text-slate-500 font-medium">${item.excelId}</td>
             <td class="px-6 py-4 text-sm font-bold text-slate-900 dark:text-white">${item.name}</td>
             <td class="px-6 py-4 text-sm text-slate-500">${item.email}</td>
@@ -699,9 +882,14 @@ function renderAutomationTable() {
                 </span>
             </td>
             <td class="px-6 py-4 text-right">
-                <button class="p-1.5 rounded-lg text-slate-400 hover:text-primary transition-all">
-                    <span class="material-symbols-outlined text-[20px]">more_horiz</span>
-                </button>
+                <div class="flex justify-end gap-2">
+                    <button onclick="openDeleteModal('${item.excelId}', 'automation')" class="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50/50 transition-all">
+                        <span class="material-symbols-outlined text-[18px]">delete</span>
+                    </button>
+                    <button onclick="handleMoreActions(event, '${item.excelId}')" class="p-1.5 rounded-lg text-slate-400 hover:text-secondary transition-all">
+                        <span class="material-symbols-outlined text-[18px]">more_horiz</span>
+                    </button>
+                </div>
             </td>
         `;
         tbody.appendChild(row);
@@ -724,125 +912,137 @@ function handleAutomate() {
 }
 
 
-function showToast(message) {
+function showToast(message, type = 'success') {
     const toast = document.getElementById('toast');
     const toastMessage = document.getElementById('toastMessage');
+    if (!toast || !toastMessage) return;
+
     toastMessage.textContent = message;
+    toast.className = `premium-toast fixed bottom-6 right-6 px-6 py-4 rounded-lg shadow-2xl flex items-center gap-3 z-[200] animate-slide-up`;
+
+    if (type === 'error') {
+        toast.style.background = 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)';
+    } else {
+        toast.style.background = 'linear-gradient(135deg, #059669 0%, #047857 100%)';
+    }
+
     toast.classList.remove('hidden');
 
     setTimeout(() => {
-        toast.classList.add('hidden');
+        toast.classList.add('animate-fade-out');
+        setTimeout(() => {
+            toast.classList.add('hidden');
+            toast.classList.remove('animate-fade-out');
+        }, 300);
     }, 3000);
+}
+
+// Button Loading Wrapper
+async function withLoading(btn, callback) {
+    if (!btn) return callback();
+    btn.classList.add('btn-loading');
+    try {
+        await new Promise(resolve => setTimeout(resolve, 1200)); // Fake realistic delay
+        await callback();
+    } finally {
+        btn.classList.remove('btn-loading');
+    }
 }
 
 // Function to add customer to table
 function addCustomerToTable(customer) {
-    const tbody = document.querySelector('.premium-table tbody');
+    const isDashboard = document.getElementById('recentCustomersBody') !== null;
+    const tbody = isDashboard ? document.getElementById('recentCustomersBody') : document.getElementById('customerTableBody');
+    if (!tbody) return;
+
     const row = document.createElement('tr');
     row.className = 'hover:bg-blue-50/50 dark:hover:bg-blue-900/10 transition-colors group cursor-pointer';
 
-    // Get first letter of customer name for avatar
-    const firstLetter = customer.clientName.charAt(0).toUpperCase();
+    const firstLetter = customer.clientName ? customer.clientName.charAt(0).toUpperCase() : 'C';
+    const statusClass = customer.status === 'Active' ? 'badge-active' : customer.status === 'Pending' ? 'badge-pending' : 'badge-inactive';
+    const statusDot = customer.status === 'Active' ? 'bg-emerald-500' : customer.status === 'Pending' ? 'bg-amber-500' : 'bg-red-500';
 
-    // Determine badge class based on status
-    let badgeClass = 'badge-active';
-    if (customer.status === 'Pending') badgeClass = 'badge-pending';
-    if (customer.status === 'Inactive') badgeClass = 'badge-inactive';
-
-    row.innerHTML = `
-        <td class="px-6 py-4 text-sm text-slate-500">${customer.id}</td>
-        <td class="px-6 py-4">
-            <div class="flex items-center gap-3">
-                <div class="size-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-semibold text-primary">${firstLetter}</div>
-                <span class="text-sm font-medium text-slate-900 dark:text-white">${customer.clientName}</span>
-            </div>
-        </td>
-        <td class="px-6 py-4 text-sm text-slate-500 font-medium">${customer.purchaseOrder || 'N/A'}</td>
-        <td class="px-6 py-4 text-sm ${customer.files > 0 ? 'text-primary' : 'text-slate-400'} font-medium">${customer.files} File${customer.files !== 1 ? 's' : ''}</td>
-        <td class="px-6 py-4">
-            <span class="${badgeClass} px-2.5 py-1 rounded-full text-xs font-medium inline-flex items-center">
-                <span class="size-1.5 rounded-full ${customer.status === 'Active' ? 'bg-emerald-500' : customer.status === 'Pending' ? 'bg-amber-500' : 'bg-red-500'} mr-1.5"></span> ${customer.status}
-            </span>
-        </td>
-        <td class="px-6 py-4 text-right">
-            <button class="action-icon text-slate-400 hover:text-primary transition-colors" onclick="deleteCustomer('${customer.id}')">
-                <span class="material-symbols-outlined">delete</span>
-            </button>
-        </td>
-    `;
-
-    // Insert at the beginning of tbody
+    if (isDashboard) {
+        // 6 Column Layout for Dashboard
+        row.innerHTML = `
+            <td class="px-6 py-4 text-sm text-slate-500">${customer.id}</td>
+            <td class="px-6 py-4">
+                <div class="flex items-center gap-3">
+                    <div class="size-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-semibold text-primary">${firstLetter}</div>
+                    <span class="text-sm font-medium text-slate-900 dark:text-white">${customer.clientName}</span>
+                </div>
+            </td>
+            <td class="px-6 py-4 text-sm text-slate-500 font-medium">${customer.purchaseOrder || 'N/A'}</td>
+            <td class="px-6 py-4 text-sm text-slate-400 font-medium">${customer.files || 0} File(s)</td>
+            <td class="px-6 py-4">
+                <span class="${statusClass} px-2.5 py-1 rounded-full text-[11px] font-bold inline-flex items-center">
+                    <span class="size-1.5 rounded-full ${statusDot} mr-1.5"></span> ${customer.status}
+                </span>
+            </td>
+            <td class="px-6 py-4 text-right">
+                <button class="action-icon text-slate-400 hover:text-primary transition-colors" onclick="handleMoreActions(event, '${customer.id}')">
+                    <span class="material-symbols-outlined">more_horiz</span>
+                </button>
+            </td>
+        `;
+    } else {
+        // 8 Column Layout for Directory
+        row.innerHTML = `
+            <td class="px-6 py-4 text-sm text-slate-500 font-medium">${customer.id}</td>
+            <td class="px-6 py-4">
+                <div class="flex items-center gap-3">
+                    <div class="size-8 rounded-lg bg-primary/10 flex items-center justify-center font-bold text-primary text-xs">${firstLetter}</div>
+                    <span class="text-sm font-semibold text-slate-900 dark:text-white">${customer.clientName}</span>
+                </div>
+            </td>
+            <td class="px-6 py-4 text-sm text-slate-500">${customer.emailAddress || 'N/A'}</td>
+            <td class="px-6 py-4 text-sm text-slate-500">${customer.phoneNumber || 'N/A'}</td>
+            <td class="px-6 py-4 text-sm text-slate-400 font-medium">${customer.files || 0} File(s)</td>
+            <td class="px-6 py-4 text-sm text-slate-500">${customer.timestamp || new Date().toLocaleDateString()}</td>
+            <td class="px-6 py-4">
+                <span class="${statusClass} px-2.5 py-1 rounded-full text-[11px] font-bold inline-flex items-center">
+                    <span class="size-1.5 rounded-full ${statusDot} mr-1.5"></span> ${customer.status}
+                </span>
+            </td>
+            <td class="px-6 py-4 text-right">
+                <div class="flex justify-end gap-1">
+                    <button class="action-icon text-slate-400 hover:text-red-500 transition-colors" onclick="deleteCustomer('${customer.id}')" title="Delete">
+                        <span class="material-symbols-outlined text-[20px]">delete</span>
+                    </button>
+                    <button class="action-icon text-slate-400 hover:text-primary transition-colors" onclick="handleMoreActions(event, '${customer.id}')" title="More Actions">
+                        <span class="material-symbols-outlined text-[20px]">more_horiz</span>
+                    </button>
+                </div>
+            </td>
+        `;
+    }
     tbody.insertBefore(row, tbody.firstChild);
 }
 
 // Function to load customers from localStorage
 function loadCustomers() {
     const customers = JSON.parse(localStorage.getItem('customers') || '[]');
-    const tbody = document.querySelector('.premium-table tbody');
+    const tbody = document.getElementById('recentCustomersBody');
+    if (!tbody) return;
 
-    // Clear existing rows
     tbody.innerHTML = '';
 
-    // If no customers, show default data
     if (customers.length === 0) {
         tbody.innerHTML = `
-            <tr class="hover:bg-blue-50/50 dark:hover:bg-blue-900/10 transition-colors group cursor-pointer">
-                <td class="px-6 py-4 text-sm text-slate-500">#00124</td>
-                <td class="px-6 py-4">
-                    <div class="flex items-center gap-3">
-                        <div class="size-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-semibold text-primary">A</div>
-                        <span class="text-sm font-medium text-slate-900 dark:text-white">Acme Global Inc.</span>
-                    </div>
-                </td>
-                <td class="px-6 py-4 text-sm text-slate-500 font-medium">PO-99231</td>
-                <td class="px-6 py-4 text-sm text-primary font-medium">3 Files</td>
-                <td class="px-6 py-4">
-                    <span class="badge-active px-2.5 py-1 rounded-full text-xs font-medium inline-flex items-center">
-                        <span class="size-1.5 rounded-full bg-emerald-500 mr-1.5"></span> Active
-                    </span>
-                </td>
-                <td class="px-6 py-4 text-right">
-                    <button class="action-icon text-slate-400 hover:text-primary transition-colors">
-                        <span class="material-symbols-outlined">more_horiz</span>
-                    </button>
-                </td>
-            </tr>
-            <tr class="hover:bg-blue-50/50 dark:hover:bg-blue-900/10 transition-colors group cursor-pointer">
-                <td class="px-6 py-4 text-sm text-slate-500">#00125</td>
-                <td class="px-6 py-4">
-                    <div class="flex items-center gap-3">
-                        <div class="size-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-semibold text-primary">S</div>
-                        <span class="text-sm font-medium text-slate-900 dark:text-white">Stark Industries</span>
-                    </div>
-                </td>
-                <td class="px-6 py-4 text-sm text-slate-500 font-medium">PO-88210</td>
-                <td class="px-6 py-4 text-sm text-slate-400 font-medium">0 Files</td>
-                <td class="px-6 py-4">
-                    <span class="badge-pending px-2.5 py-1 rounded-full text-xs font-medium inline-flex items-center">
-                        <span class="size-1.5 rounded-full bg-amber-500 mr-1.5"></span> Pending
-                    </span>
-                </td>
-                <td class="px-6 py-4 text-right">
-                    <button class="action-icon text-slate-400 hover:text-primary transition-colors">
-                        <span class="material-symbols-outlined">more_horiz</span>
-                    </button>
+            <tr>
+                <td colspan="6" class="px-6 py-12 text-center text-slate-500">
+                    No recent customers found.
                 </td>
             </tr>
         `;
     } else {
-        // Add customers from localStorage (newest first)
-        customers.forEach(customer => {
+        customers.slice(0, 5).forEach(customer => {
+            const firstLetter = customer.clientName ? customer.clientName.charAt(0).toUpperCase() : 'C';
+            const statusClass = customer.status === 'Active' ? 'badge-active' : customer.status === 'Pending' ? 'badge-pending' : 'badge-inactive';
+            const statusDot = customer.status === 'Active' ? 'bg-emerald-500' : customer.status === 'Pending' ? 'bg-amber-500' : 'bg-red-500';
+
             const row = document.createElement('tr');
             row.className = 'hover:bg-blue-50/50 dark:hover:bg-blue-900/10 transition-colors group cursor-pointer';
-
-            // Get first letter of customer name for avatar
-            const firstLetter = customer.clientName.charAt(0).toUpperCase();
-
-            // Determine badge class based on status
-            let badgeClass = 'badge-active';
-            if (customer.status === 'Pending') badgeClass = 'badge-pending';
-            if (customer.status === 'Inactive') badgeClass = 'badge-inactive';
-
             row.innerHTML = `
                 <td class="px-6 py-4 text-sm text-slate-500">${customer.id}</td>
                 <td class="px-6 py-4">
@@ -852,19 +1052,18 @@ function loadCustomers() {
                     </div>
                 </td>
                 <td class="px-6 py-4 text-sm text-slate-500 font-medium">${customer.purchaseOrder || 'N/A'}</td>
-                <td class="px-6 py-4 text-sm ${customer.files > 0 ? 'text-primary' : 'text-slate-400'} font-medium">${customer.files} File${customer.files !== 1 ? 's' : ''}</td>
+                <td class="px-6 py-4 text-sm text-slate-400 font-medium">${customer.files || 0} File(s)</td>
                 <td class="px-6 py-4">
-                    <span class="${badgeClass} px-2.5 py-1 rounded-full text-xs font-medium inline-flex items-center">
-                        <span class="size-1.5 rounded-full ${customer.status === 'Active' ? 'bg-emerald-500' : customer.status === 'Pending' ? 'bg-amber-500' : 'bg-red-500'} mr-1.5"></span> ${customer.status}
+                    <span class="${statusClass} px-2.5 py-1 rounded-full text-[11px] font-bold inline-flex items-center">
+                        <span class="size-1.5 rounded-full ${statusDot} mr-1.5"></span> ${customer.status}
                     </span>
                 </td>
                 <td class="px-6 py-4 text-right">
-                    <button class="action-icon text-slate-400 hover:text-primary transition-colors" onclick="deleteCustomer('${customer.id}')">
-                        <span class="material-symbols-outlined">delete</span>
+                    <button class="action-icon text-slate-400 hover:text-primary transition-colors" onclick="handleMoreActions(event, '${customer.id}')">
+                        <span class="material-symbols-outlined">more_horiz</span>
                     </button>
                 </td>
             `;
-
             tbody.appendChild(row);
         });
     }
@@ -872,7 +1071,7 @@ function loadCustomers() {
 
 // Function to delete customer
 function deleteCustomer(customerId) {
-    openDeleteModal(customerId);
+    openDeleteModal(customerId, 'customer');
 }
 
 // Excel Table Select All Functionality

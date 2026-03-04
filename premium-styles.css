@@ -1,8 +1,10 @@
 :root {
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
-    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.05), 0 10px 15px rgba(0, 0, 0, 0.03);
-    --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.08), 0 20px 40px rgba(0, 0, 0, 0.05);
-    --shadow-xl: 0 20px 50px rgba(0, 0, 0, 0.12), 0 30px 60px rgba(0, 0, 0, 0.08);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.04), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
+    --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+    --layout-gap: 24px;
 }
 
 body.mesh-gradient::before {
@@ -66,17 +68,42 @@ body.mesh-gradient::before {
         0 0 0 1px rgba(255, 255, 255, 0.1) inset !important;
 }
 
-.btn-premium-primary:hover {
-    box-shadow:
-        0 4px 12px rgba(37, 99, 235, 0.35),
-        0 8px 24px rgba(37, 99, 235, 0.25),
-        0 0 0 1px rgba(255, 255, 255, 0.2) inset !important;
+.btn-premium-primary:hover,
+.btn-premium-emerald:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: var(--shadow-xl) !important;
 }
 
-.btn-premium-emerald:hover {
-    box-shadow:
-        0 4px 12px rgba(5, 150, 105, 0.35),
-        0 8px 24px rgba(5, 150, 105, 0.25) !important;
+.btn-premium-primary:active,
+.btn-premium-emerald:active {
+    transform: translateY(0) scale(0.98);
+}
+
+/* Button Loading State */
+.btn-loading {
+    position: relative;
+    color: transparent !important;
+    pointer-events: none;
+}
+
+.btn-loading::after {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    top: 50%;
+    left: 50%;
+    margin: -10px 0 0 -10px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: white;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 /* Enhanced Badge System */
@@ -273,4 +300,92 @@ input[type="checkbox"]:checked {
             rgba(226, 232, 240, 0.2) 100%);
     background-size: 1000px 100%;
     animation: shimmerLoading 2s infinite;
+}
+
+/* Action Dropdown Menu */
+.dropdown-menu {
+    position: fixed;
+    z-index: 200;
+    min-width: 200px;
+    background: rgba(255, 255, 255, 0.98) !important;
+    backdrop-filter: blur(24px) saturate(180%) !important;
+    border: 1px solid rgba(226, 232, 240, 0.8) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 10px 40px rgba(15, 23, 42, 0.15) !important;
+    padding: 6px !important;
+    transform-origin: top right;
+    display: none;
+    animation: dropdownFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes dropdownFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.dark .dropdown-menu {
+    background: rgba(15, 23, 42, 0.95) !important;
+    border-color: rgba(30, 41, 59, 0.8) !important;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4) !important;
+}
+
+.dropdown-item {
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    width: 100% !important;
+    padding: 10px 14px !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    color: #475569 !important;
+    border-radius: 8px !important;
+    transition: all 0.2s !important;
+    cursor: pointer !important;
+    background: transparent;
+    border: none;
+}
+
+.dark .dropdown-item {
+    color: #94a3b8 !important;
+}
+
+.dropdown-item:hover {
+    background: rgba(37, 99, 235, 0.08) !important;
+    color: #2563eb !important;
+}
+
+.dark .dropdown-item:hover {
+    background: rgba(37, 99, 235, 0.2) !important;
+    color: #60a5fa !important;
+}
+
+.dropdown-item span {
+    font-size: 18px !important;
+    opacity: 0.7 !important;
+}
+
+.dropdown-item:hover span {
+    opacity: 1 !important;
+}
+
+.dropdown-divider {
+    height: 1px !important;
+    margin: 6px 4px !important;
+    background: rgba(226, 232, 240, 0.6) !important;
+}
+
+.dark .dropdown-divider {
+    background: rgba(30, 41, 59, 0.6) !important;
+}
+
+.dropdown-item.text-red-500:hover {
+    background: rgba(239, 68, 68, 0.1) !important;
+    color: #ef4444 !important;
 }
