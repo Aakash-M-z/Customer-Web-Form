@@ -381,6 +381,12 @@ function initCharts() {
         }
 
         const growthCtx = growthCanvas.getContext('2d');
+
+        // Create Gradient
+        const gradient = growthCtx.createLinearGradient(0, 0, 0, 400);
+        gradient.addColorStop(0, 'rgba(37, 99, 235, 0.2)');
+        gradient.addColorStop(1, 'rgba(37, 99, 235, 0)');
+
         growthChartInstance = new Chart(growthCtx, {
             type: 'line',
             data: {
@@ -389,7 +395,7 @@ function initCharts() {
                     label: 'New Customers',
                     data: [45, 59, 80, 81, 96, 120],
                     borderColor: primaryColor,
-                    backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                    backgroundColor: gradient,
                     borderWidth: 3,
                     fill: true,
                     tension: 0.4,
@@ -397,7 +403,10 @@ function initCharts() {
                     pointBackgroundColor: primaryColor,
                     pointBorderColor: '#fff',
                     pointBorderWidth: 2,
-                    pointHoverRadius: 6
+                    pointHoverRadius: 6,
+                    pointHoverBackgroundColor: primaryColor,
+                    pointHoverBorderColor: '#fff',
+                    pointHoverBorderWidth: 2
                 }]
             },
             options: {
@@ -515,7 +524,7 @@ let filteredAutomations = [];
 // Realistic Names and Companies for Dummy Data
 const dummyNames = ["James Smith", "Michael Johnson", "Robert Williams", "Maria Garcia", "David Miller", "Linda Davis", "Richard Rodriguez", "Susan Martinez", "Joseph Hernandez", "Karen Moore", "Christopher Taylor", "Nancy Anderson", "Thomas Thomas", "Betty Jackson", "Daniel White", "Margaret Harris", "Matthew Martin", "Sandra Thompson", "Anthony Garcia", "Ashley Martinez", "Mark Robinson", "Dorothy Clark", "Paul Rodriguez", "Kimberly Lewis", "Steven Lee", "Emily Walker", "Andrew Hall", "Donna Allen", "Kenneth Young", "Michelle Hernandez"];
 const dummyCompanies = ["Acme Corp", "Globex Corporation", "Soylent Corp", "Initech", "Umbrella Corp", "Stark Industries", "Wayne Enterprises", "Hooli", "Pied Piper", "Massive Dynamic", "Vandelay Industries", "Cyberdyne Systems", "Aperture Science", "Bluth Company", "E Corp"];
-const dummyStatuses = ["Active", "Pending", "Inactive"];
+const dummyStatuses = ["Active", "Pending", "Inactive", "Suspended"];
 const dummyTags = ["Enterprise", "Mid-Market", "High Value", "Strategic"];
 
 // Generate Dummy Data
@@ -523,14 +532,15 @@ function generateDummyData() {
     // Generate 50 Customers
     for (let i = 1; i <= 50; i++) {
         const name = dummyNames[Math.floor(Math.random() * dummyNames.length)] + " " + String(i);
+        const status = dummyStatuses[Math.floor(Math.random() * dummyStatuses.length)];
         allCustomers.push({
             id: `#C-10${50 + i}`,
             name: name,
             email: name.toLowerCase().replace(" ", ".") + "@example.com",
             phone: `+1 (${Math.floor(Math.random() * 900) + 100}) 555-${Math.floor(Math.random() * 9000) + 1000}`,
-            docs: i % 3 === 0 ? ["PDF", "XLS"] : i % 2 === 0 ? ["PDF"] : ["XLS"],
+            docs: i % 3 === 0 ? ["PDF", "XLS", "DOC"] : i % 2 === 0 ? ["PDF"] : ["XLS"],
             createdDate: new Date(Date.now() - Math.floor(Math.random() * 10000000000)).toLocaleDateString(),
-            status: dummyStatuses[Math.floor(Math.random() * dummyStatuses.length)]
+            status: status
         });
     }
 
@@ -551,25 +561,41 @@ function generateDummyData() {
 function initCustomersPage() {
     console.log("Initializing Customers Page...");
     if (allCustomers.length === 0) generateDummyData();
-    updateFilters();
+    filterCustomers();
 }
 
-// Search Handler
+// Search and Filter Functions
 function handleSearch(query) {
     currentSearchQuery = query.toLowerCase();
-    updateFilters();
+    filterCustomers();
 }
 
-// Global Filter Logic
-function updateFilters() {
-    filteredCustomers = allCustomers.filter(c => {
-        const matchesSearch = c.name.toLowerCase().includes(currentSearchQuery) ||
-            c.email.toLowerCase().includes(currentSearchQuery) ||
-            c.id.toLowerCase().includes(currentSearchQuery);
-        const matchesStatus = currentStatusFilter === 'All' || c.status === currentStatusFilter;
+async function filterCustomers() {
+    // Show Loading
+    const tbody = document.getElementById('customerTableBody');
+    if (tbody) showSkeleton('customerTableBody', 8);
+
+    // Get search query from any available search input if not explicitly passed
+    const searchInput = document.getElementById('customerSearch') || document.getElementById('customerSearchMain');
+    if (searchInput) {
+        currentSearchQuery = searchInput.value.toLowerCase();
+    }
+
+    filteredCustomers = allCustomers.filter(customer => {
+        const name = customer.name || customer.clientName || '';
+        const email = customer.email || customer.emailAddress || '';
+        const id = customer.id || '';
+
+        const matchesSearch = name.toLowerCase().includes(currentSearchQuery) ||
+            email.toLowerCase().includes(currentSearchQuery) ||
+            id.toLowerCase().includes(currentSearchQuery);
+        const matchesStatus = currentStatusFilter === 'All' || customer.status === currentStatusFilter;
         return matchesSearch && matchesStatus;
     });
-    currentPage = 1;
+
+    if (tbody) {
+        await new Promise(resolve => setTimeout(resolve, 300)); // Minimal delay for feel
+    }
     renderCustomerTable(1);
 }
 
@@ -601,15 +627,19 @@ function setStatusFilter(status) {
         }
     });
 
-    updateFilters();
+    filterCustomers();
     document.getElementById('filterMenu').classList.add('hidden');
     showToast(`Filtering by: ${status}`);
 }
 
 // Render Customer Table
-function renderCustomerTable(page) {
+async function renderCustomerTable(page) {
     const tbody = document.getElementById('customerTableBody');
     if (!tbody) return;
+
+    // Show Loading State
+    showSkeleton('customerTableBody', 8);
+    await new Promise(resolve => setTimeout(resolve, 800)); // Simulate network delay
 
     currentPage = page;
     const start = (page - 1) * itemsPerPage;
@@ -618,40 +648,68 @@ function renderCustomerTable(page) {
 
     tbody.innerHTML = '';
 
+    if (paginatedItems.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="8" class="px-6 py-12">
+                    <div class="empty-state-container">
+                        <span class="material-symbols-outlined empty-state-icon">person_off</span>
+                        <h3 class="text-lg font-bold text-slate-900 dark:text-white">No customers found</h3>
+                        <p class="text-sm text-slate-500 max-w-xs mx-auto">Try adjusting your search filters or add a new customer to the directory.</p>
+                        <button onclick="openCustomerModal()" class="mt-4 px-4 py-2 bg-primary text-white rounded-lg text-sm font-bold">Add New Customer</button>
+                    </div>
+                </td>
+            </tr>
+        `;
+        updatePaginationUI();
+        return;
+    }
+
     paginatedItems.forEach(customer => {
-        const initials = customer.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
-        const statusClass = customer.status === 'Active' ? 'badge-active' : customer.status === 'Pending' ? 'badge-pending' : 'badge-inactive';
-        const statusDot = customer.status === 'Active' ? 'bg-emerald-500' : customer.status === 'Pending' ? 'bg-amber-500' : 'bg-red-500';
+        const initials = (customer.name || 'CU').split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+
+        // Polished status logic
+        let statusClass = 'bg-slate-100 text-slate-600';
+        let statusDot = 'bg-slate-400';
+
+        switch (customer.status) {
+            case 'Active': statusClass = 'badge-active'; statusDot = 'bg-emerald-500'; break;
+            case 'Pending': statusClass = 'badge-pending'; statusDot = 'bg-amber-500'; break;
+            case 'Inactive': statusClass = 'badge-inactive'; statusDot = 'bg-red-500'; break;
+            case 'Suspended': statusClass = 'bg-slate-100 text-slate-600 border-slate-200'; statusDot = 'bg-slate-400'; break;
+        }
 
         const row = document.createElement('tr');
-        row.className = 'hover:bg-blue-50/50 dark:hover:bg-blue-900/10 transition-colors group cursor-pointer';
+        row.className = 'hover:bg-blue-50/50 dark:hover:bg-blue-900/10 transition-all group cursor-pointer';
+        row.onclick = (e) => {
+            if (!e.target.closest('button')) openQuickView(customer.id);
+        };
+
         row.innerHTML = `
-            <td class="px-6 py-4 text-sm text-slate-500 font-medium">${customer.id}</td>
+            <td class="px-6 py-4 text-sm text-slate-500 font-medium">${customer.id || '-'}</td>
             <td class="px-6 py-4">
                 <div class="flex items-center gap-3">
-                    <div class="size-8 rounded-lg bg-primary/10 flex items-center justify-center font-bold text-primary text-xs">${initials}</div>
-                    <span class="text-sm font-semibold text-slate-900 dark:text-white">${customer.name}</span>
+                    <div class="size-8 rounded-lg bg-primary/10 flex items-center justify-center font-bold text-primary text-xs transition-transform group-hover:scale-110">${initials}</div>
+                    <span class="text-sm font-semibold text-slate-900 dark:text-white">${customer.name || '-'}</span>
                 </div>
             </td>
-            <td class="px-6 py-4 text-sm text-slate-500">${customer.email}</td>
-            <td class="px-6 py-4 text-sm text-slate-500">${customer.phone}</td>
+            <td class="px-6 py-4 text-sm text-slate-500">${customer.email || '-'}</td>
+            <td class="px-6 py-4 text-sm text-slate-500">${customer.phone || '-'}</td>
             <td class="px-6 py-4">
-                <div class="flex gap-1">
-                    ${customer.docs.map(doc => `<span class="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-[10px] font-bold text-slate-500 border border-slate-200">${doc}</span>`).join('')}
+                <div class="flex gap-1 flex-wrap">
+                    ${(customer.docs || []).map(doc => `<span class="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-[10px] font-bold text-slate-500 border border-slate-200">${doc}</span>`).join('') || '-'}
                 </div>
             </td>
-            <td class="px-6 py-4 text-sm text-slate-500">${customer.createdDate}</td>
+            <td class="px-6 py-4 text-sm text-slate-500">${customer.createdDate || '-'}</td>
             <td class="px-6 py-4">
-                <span class="${statusClass} px-2.5 py-1 rounded-full text-[11px] font-bold inline-flex items-center">
-                    <span class="size-1.5 rounded-full ${statusDot} mr-1.5"></span> ${customer.status}
+                <span class="${statusClass} px-2.5 py-1 rounded-full text-[11px] font-bold inline-flex items-center shadow-sm">
+                    <span class="size-1.5 rounded-full ${statusDot} mr-1.5 animate-pulse"></span> ${customer.status || 'Unknown'}
                 </span>
             </td>
             <td class="px-6 py-4 text-right">
-                <div class="flex justify-end gap-2">
-                    <button onclick="handleMoreActions(event, '${customer.id}', 'customer')" class="p-1.5 rounded-lg text-slate-400 hover:text-primary hover:bg-primary/10 transition-all">
-                        <span class="material-symbols-outlined text-[18px]">more_horiz</span>
-                    </button>
-                </div>
+                <button onclick="handleMoreActions(event, '${customer.id}', 'customer')" class="p-2 rounded-lg text-slate-400 hover:text-primary hover:bg-primary/10 transition-all active:scale-90">
+                    <span class="material-symbols-outlined text-[20px]">more_horiz</span>
+                </button>
             </td>
         `;
         tbody.appendChild(row);
@@ -702,21 +760,19 @@ function initActionDropdown() {
     dropdown.id = 'actionDropdown';
     dropdown.className = 'dropdown-menu';
     dropdown.innerHTML = `
+        <div class="px-3 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Actions</div>
         <button class="dropdown-item" onclick="handleAction('view')">
-            <span class="material-symbols-outlined">visibility</span> View Full Details
+            <span class="material-symbols-outlined">visibility</span> Quick View
         </button>
         <button class="dropdown-item" onclick="handleAction('edit')">
-            <span class="material-symbols-outlined">edit_note</span> Edit Record
+            <span class="material-symbols-outlined">edit_note</span> Edit Customer
         </button>
-        <button class="dropdown-item" onclick="handleAction('pdf')">
-            <span class="material-symbols-outlined">picture_as_pdf</span> Download PDF
-        </button>
-        <button class="dropdown-item" onclick="handleAction('email')">
-            <span class="material-symbols-outlined">mail</span> Send Email
+        <button class="dropdown-item" onclick="handleAction('docs')">
+            <span class="material-symbols-outlined">folder</span> View Documents
         </button>
         <div class="dropdown-divider"></div>
         <button class="dropdown-item text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20" onclick="handleAction('delete')">
-            <span class="material-symbols-outlined">delete</span> Delete Record
+            <span class="material-symbols-outlined">delete</span> Delete Customer
         </button>
     `;
     document.body.appendChild(dropdown);
@@ -772,18 +828,14 @@ function handleAction(type) {
 
     switch (type) {
         case 'view':
-            showToast(`Loading details for: ${activeActionId}`);
+            openQuickView(activeActionId);
             break;
         case 'edit':
+            closeQuickView();
             showToast(`Opening editor for: ${activeActionId}`);
             break;
-        case 'pdf':
-            showToast(`Generating PDF for: ${activeActionId}...`);
-            setTimeout(() => showToast(`PDF downloaded!`), 1500);
-            break;
-        case 'email':
-            showToast(`Launching email client...`);
-            window.location.href = `mailto:customer@example.com?subject=Inquiry for ${activeActionId}`;
+        case 'docs':
+            showToast(`Loading documents for: ${activeActionId}...`);
             break;
         case 'delete':
             openDeleteModal(activeActionId, activeActionType);
@@ -970,29 +1022,30 @@ function addCustomerToTable(customer) {
     const row = document.createElement('tr');
     row.className = 'hover:bg-blue-50/50 dark:hover:bg-blue-900/10 transition-colors group cursor-pointer';
 
-    const firstLetter = customer.clientName ? customer.clientName.charAt(0).toUpperCase() : 'C';
-    const statusClass = customer.status === 'Active' ? 'badge-active' : customer.status === 'Pending' ? 'badge-pending' : 'badge-inactive';
-    const statusDot = customer.status === 'Active' ? 'bg-emerald-500' : customer.status === 'Pending' ? 'bg-amber-500' : 'bg-red-500';
+    const firstLetter = (customer.name || customer.clientName || 'C').charAt(0).toUpperCase();
+    const status = customer.status || 'Active';
+    const statusClass = status === 'Active' ? 'badge-active' : status === 'Pending' ? 'badge-pending' : status === 'Inactive' ? 'badge-inactive' : 'bg-slate-100 text-slate-600';
+    const statusDot = status === 'Active' ? 'bg-emerald-500' : status === 'Pending' ? 'bg-amber-500' : status === 'Inactive' ? 'bg-red-500' : 'bg-slate-400';
 
     if (isDashboard) {
         // 6 Column Layout for Dashboard
         row.innerHTML = `
-            <td class="px-6 py-4 text-sm text-slate-500">${customer.id}</td>
+            <td class="px-6 py-4 text-sm text-slate-500">${customer.id || '-'}</td>
             <td class="px-6 py-4">
                 <div class="flex items-center gap-3">
                     <div class="size-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-semibold text-primary">${firstLetter}</div>
-                    <span class="text-sm font-medium text-slate-900 dark:text-white">${customer.clientName}</span>
+                    <span class="text-sm font-medium text-slate-900 dark:text-white">${customer.name || customer.clientName || '-'}</span>
                 </div>
             </td>
             <td class="px-6 py-4 text-sm text-slate-500 font-medium">${customer.purchaseOrder || 'N/A'}</td>
             <td class="px-6 py-4 text-sm text-slate-400 font-medium">${customer.files || 0} File(s)</td>
             <td class="px-6 py-4">
                 <span class="${statusClass} px-2.5 py-1 rounded-full text-[11px] font-bold inline-flex items-center">
-                    <span class="size-1.5 rounded-full ${statusDot} mr-1.5"></span> ${customer.status}
+                    <span class="size-1.5 rounded-full ${statusDot} mr-1.5"></span> ${status}
                 </span>
             </td>
             <td class="px-6 py-4 text-right">
-                <button class="action-icon text-slate-400 hover:text-primary transition-colors" onclick="handleMoreActions(event, '${customer.id}')">
+                <button class="action-icon text-slate-400 hover:text-primary transition-colors" onclick="handleMoreActions(event, '${customer.id}', 'customer')">
                     <span class="material-symbols-outlined">more_horiz</span>
                 </button>
             </td>
@@ -1000,20 +1053,20 @@ function addCustomerToTable(customer) {
     } else {
         // 8 Column Layout for Directory
         row.innerHTML = `
-            <td class="px-6 py-4 text-sm text-slate-500 font-medium">${customer.id}</td>
+            <td class="px-6 py-4 text-sm text-slate-500 font-medium">${customer.id || '-'}</td>
             <td class="px-6 py-4">
                 <div class="flex items-center gap-3">
                     <div class="size-8 rounded-lg bg-primary/10 flex items-center justify-center font-bold text-primary text-xs">${firstLetter}</div>
-                    <span class="text-sm font-semibold text-slate-900 dark:text-white">${customer.clientName}</span>
+                    <span class="text-sm font-semibold text-slate-900 dark:text-white">${customer.name || customer.clientName || '-'}</span>
                 </div>
             </td>
-            <td class="px-6 py-4 text-sm text-slate-500">${customer.emailAddress || 'N/A'}</td>
-            <td class="px-6 py-4 text-sm text-slate-500">${customer.phoneNumber || 'N/A'}</td>
+            <td class="px-6 py-4 text-sm text-slate-500">${customer.email || customer.emailAddress || '-'}</td>
+            <td class="px-6 py-4 text-sm text-slate-500">${customer.phone || customer.phoneNumber || '-'}</td>
             <td class="px-6 py-4 text-sm text-slate-400 font-medium">${customer.files || 0} File(s)</td>
-            <td class="px-6 py-4 text-sm text-slate-500">${customer.timestamp || new Date().toLocaleDateString()}</td>
+            <td class="px-6 py-4 text-sm text-slate-500">${customer.createdDate || customer.timestamp || new Date().toLocaleDateString()}</td>
             <td class="px-6 py-4">
                 <span class="${statusClass} px-2.5 py-1 rounded-full text-[11px] font-bold inline-flex items-center">
-                    <span class="size-1.5 rounded-full ${statusDot} mr-1.5"></span> ${customer.status}
+                    <span class="size-1.5 rounded-full ${statusDot} mr-1.5"></span> ${status}
                 </span>
             </td>
             <td class="px-6 py-4 text-right">
@@ -1029,18 +1082,35 @@ function addCustomerToTable(customer) {
 }
 
 // Function to load customers from localStorage
-function loadCustomers() {
+async function loadCustomers() {
     const customers = JSON.parse(localStorage.getItem('customers') || '[]');
     const tbody = document.getElementById('recentCustomersBody');
     if (!tbody) return;
+
+    // Show Loading State
+    tbody.innerHTML = `
+        <tr class="animate-pulse">
+            <td class="px-6 py-4"><div class="skeleton-box w-12"></div></td>
+            <td class="px-6 py-4"><div class="flex items-center gap-2"><div class="skeleton-avatar"></div><div class="skeleton-box w-24"></div></div></td>
+            <td class="px-6 py-4"><div class="skeleton-box w-20"></div></td>
+            <td class="px-6 py-4"><div class="skeleton-box w-16"></div></td>
+            <td class="px-6 py-4"><div class="skeleton-box w-16 h-6 rounded-full"></div></td>
+            <td class="px-6 py-4"><div class="skeleton-box w-8 ml-auto"></div></td>
+        </tr>
+    `;
+    await new Promise(resolve => setTimeout(resolve, 600));
 
     tbody.innerHTML = '';
 
     if (customers.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="6" class="px-6 py-12 text-center text-slate-500">
-                    No recent customers found.
+                <td colspan="6" class="px-6 py-12">
+                    <div class="empty-state-container">
+                        <span class="material-symbols-outlined empty-state-icon">inbox</span>
+                        <h3 class="text-sm font-bold text-slate-900 dark:text-white">No recent activity</h3>
+                        <p class="text-xs text-slate-500">New customer records will appear here.</p>
+                    </div>
                 </td>
             </tr>
         `;
@@ -1078,6 +1148,85 @@ function loadCustomers() {
     }
 }
 
+// --- HELPER UI FUNCTIONS ---
+
+function showSkeleton(containerId, columns, rows = itemsPerPage) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+
+    let skeletonHtml = '';
+    for (let i = 0; i < rows; i++) {
+        skeletonHtml += `
+            <tr class="animate-pulse border-b border-slate-100 dark:border-slate-800">
+                <td class="px-6 py-4"><div class="skeleton-box w-12"></div></td>
+                <td class="px-6 py-4">
+                    <div class="flex items-center gap-3">
+                        <div class="skeleton-avatar"></div>
+                        <div class="skeleton-box w-32"></div>
+                    </div>
+                </td>
+                <td class="px-6 py-4"><div class="skeleton-box w-40"></div></td>
+                <td class="px-6 py-4"><div class="skeleton-box w-24"></div></td>
+                <td class="px-6 py-4"><div class="flex gap-1"><div class="skeleton-box w-8"></div><div class="skeleton-box w-8"></div></div></td>
+                <td class="px-6 py-4"><div class="skeleton-box w-20"></div></td>
+                <td class="px-6 py-4"><div class="skeleton-box w-16 h-6 rounded-full"></div></td>
+                <td class="px-6 py-4 text-right"><div class="skeleton-box w-8 ml-auto"></div></td>
+            </tr>
+        `;
+    }
+    container.innerHTML = skeletonHtml;
+}
+
+function openQuickView(id) {
+    const customer = allCustomers.find(c => c.id === id) ||
+        JSON.parse(localStorage.getItem('customers') || '[]').find(c => c.id === id);
+
+    if (!customer) return;
+
+    const modal = document.getElementById('quickViewModal');
+    if (!modal) return;
+
+    // Fill Modal Data
+    const initials = (customer.name || customer.clientName || 'CU').split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+    document.getElementById('qv-avatar').textContent = initials;
+    document.getElementById('qv-name').textContent = customer.name || customer.clientName || '-';
+    document.getElementById('qv-id').textContent = `ID: ${customer.id}`;
+    document.getElementById('qv-email').textContent = customer.email || customer.emailAddress || '-';
+    document.getElementById('qv-phone').textContent = customer.phone || customer.phoneNumber || '-';
+    document.getElementById('qv-date').textContent = customer.createdDate || customer.timestamp || '-';
+
+    // Status Badge
+    const status = customer.status || 'Active';
+    const statusColor = status === 'Active' ? 'text-emerald-500' : status === 'Pending' ? 'text-amber-500' : status === 'Inactive' ? 'text-red-500' : 'text-slate-500';
+    document.getElementById('qv-status-container').innerHTML = `
+        <span class="glass-badge ${statusColor}">
+            <span class="size-2 rounded-full bg-current"></span> ${status}
+        </span>
+    `;
+
+    // Docs
+    const docs = customer.docs || (customer.files ? [`${customer.files} Documents`] : []);
+    document.getElementById('qv-docs-container').innerHTML = docs.map(doc => `
+        <span class="px-3 py-1 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 text-xs font-bold rounded-lg border border-blue-100 dark:border-blue-800 flex items-center gap-2">
+            <span class="material-symbols-outlined text-[14px]">description</span> ${doc}
+        </span>
+    `).join('') || '<span class="text-xs text-slate-400">No documents found</span>';
+
+    // Edit Button
+    document.getElementById('qv-edit-btn').onclick = () => {
+        closeQuickView();
+        showToast(`Opening editor for ${id}...`);
+    };
+
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeQuickView() {
+    const modal = document.getElementById('quickViewModal');
+    if (modal) modal.classList.add('hidden');
+    document.body.style.overflow = 'auto';
+}
 // Function to delete customer
 function deleteCustomer(customerId) {
     openDeleteModal(customerId, 'customer');
@@ -1117,5 +1266,100 @@ function updateSelectAllCheckbox() {
     else {
         selectAllCheckbox.checked = false;
         selectAllCheckbox.indeterminate = false;
+    }
+}
+// --- EXPORT FUNCTIONALITY ---
+
+function exportCustomers(format = 'csv') {
+    // Determine which data to export
+    // If we're on the directory page, export filtered results.
+    // Otherwise (dashboard), export all customers or from localStorage.
+    let dataToExport = [];
+
+    if (typeof filteredCustomers !== 'undefined' && filteredCustomers.length > 0) {
+        dataToExport = filteredCustomers;
+    } else {
+        const stored = JSON.parse(localStorage.getItem('customers') || '[]');
+        dataToExport = stored.length > 0 ? stored : allCustomers;
+    }
+
+    if (dataToExport.length === 0) {
+        showToast('No customer data available to export');
+        return;
+    }
+
+    showToast(`Preparing ${format.toUpperCase()} export...`);
+
+    if (format === 'csv') {
+        // CSV Headers
+        const headers = ['ID', 'Customer Name', 'Email', 'Phone', 'PO Number', 'Documents', 'Status', 'Date Created'];
+        const csvRows = [headers.join(',')];
+
+        dataToExport.forEach(c => {
+            const row = [
+                c.id || '-',
+                `"${(c.name || c.clientName || '-').replace(/"/g, '""')}"`,
+                c.email || c.emailAddress || '-',
+                c.phone || c.phoneNumber || '-',
+                c.purchaseOrder || '-',
+                `"${(Array.isArray(c.docs) ? c.docs.join('; ') : (c.files || '-'))}"`,
+                c.status || '-',
+                c.createdDate || c.timestamp || '-'
+            ];
+            csvRows.push(row.join(','));
+        });
+
+        const csvContent = csvRows.join('\n');
+        downloadFile(csvContent, 'customers.csv', 'text/csv');
+    } else if (format === 'excel') {
+        // Simple HTML Table for Excel compatibility without libraries
+        let excelContent = `
+            <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+            <head><meta charset="UTF-8"><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>Customers</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head>
+            <body>
+                <table border="1">
+                    <tr style="background-color: #f1f5f9; font-weight: bold;">
+                        <td>ID</td><td>Customer Name</td><td>Email</td><td>Phone</td><td>PO Number</td><td>Documents</td><td>Status</td><td>Date Created</td>
+                    </tr>
+        `;
+
+        dataToExport.forEach(c => {
+            excelContent += `
+                <tr>
+                    <td>${c.id || '-'}</td>
+                    <td>${c.name || c.clientName || '-'}</td>
+                    <td>${c.email || c.emailAddress || '-'}</td>
+                    <td>${c.phone || c.phoneNumber || '-'}</td>
+                    <td>${c.purchaseOrder || '-'}</td>
+                    <td>${Array.isArray(c.docs) ? c.docs.join(', ') : (c.files || '-')}</td>
+                    <td>${c.status || '-'}</td>
+                    <td>${c.createdDate || c.timestamp || '-'}</td>
+                </tr>
+            `;
+        });
+
+        excelContent += '</table></body></html>';
+        downloadFile(excelContent, 'customers.xls', 'application/vnd.ms-excel');
+    }
+}
+
+function downloadFile(content, fileName, mimeType) {
+    try {
+        const blob = new Blob([content], { type: mimeType });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+
+        setTimeout(() => {
+            showToast(`Success: ${fileName} downloaded`);
+        }, 500);
+    } catch (error) {
+        console.error('Export failed:', error);
+        showToast('Error: Could not generate export file');
     }
 }

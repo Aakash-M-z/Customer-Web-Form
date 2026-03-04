@@ -87,9 +87,20 @@
                     <p class="text-slate-500 dark:text-slate-400 mt-1">Real-time analytics and customer management insights.</p>
                 </div>
                 <div class="flex items-center gap-3">
-                    <button class="flex items-center justify-center rounded-xl px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-sm font-semibold btn-premium-outline transition-all">
-                        <span class="material-symbols-outlined mr-2 text-[20px]">file_download</span> Export
-                    </button>
+                    <div class="relative group">
+                        <button onclick="exportCustomers('csv')" class="flex items-center justify-center rounded-xl px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-sm font-semibold btn-premium-outline transition-all active:scale-95">
+                            <span class="material-symbols-outlined mr-2 text-[20px]">file_download</span> Export
+                        </button>
+                        <!-- Export Dropdown -->
+                        <div class="hidden group-hover:block absolute right-0 mt-1 w-40 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl z-[70] py-2 animate-slide-down">
+                            <button onclick="exportCustomers('csv')" class="w-full text-left px-4 py-2 text-xs hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center gap-2">
+                                <span class="material-symbols-outlined text-[18px] text-slate-400">csv</span> Export as CSV
+                            </button>
+                            <button onclick="exportCustomers('excel')" class="w-full text-left px-4 py-2 text-xs hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center gap-2">
+                                <span class="material-symbols-outlined text-[18px] text-slate-400">table_view</span> Export as Excel
+                            </button>
+                        </div>
+                    </div>
                     <button onclick="openCustomerModal()" class="flex items-center justify-center rounded-xl px-6 py-2.5 text-white text-sm font-bold transition-all btn-premium-primary btn-glow-primary">
                         <span class="material-symbols-outlined mr-2 text-[20px]">add</span> Add Customer
                     </button>
@@ -571,6 +582,52 @@
         </div>
     </div>
 
-    <script src="script.js?v=2.0"></script>
+    <!-- Quick View Modal -->
+    <div id="quickViewModal" class="premium-modal hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-[150] flex items-center justify-center p-4">
+        <div class="premium-modal-content bg-white dark:bg-slate-900 shadow-2xl max-w-2xl w-full border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden animate-slide-up">
+            <div class="p-6 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <div id="qv-avatar" class="size-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-bold text-xl"></div>
+                    <div>
+                        <h3 id="qv-name" class="text-xl font-bold text-slate-900 dark:text-white">Customer Name</h3>
+                        <p id="qv-id" class="text-xs font-medium text-slate-500 uppercase tracking-widest">ID: #00000</p>
+                    </div>
+                </div>
+                <button onclick="closeQuickView()" class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 transition-colors">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            <div class="p-8">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="detail-item">
+                        <span class="detail-label">Email Address</span>
+                        <span id="qv-email" class="detail-value">-</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Phone Number</span>
+                        <span id="qv-phone" class="detail-value">-</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Status</span>
+                        <div id="qv-status-container" class="mt-1"></div>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Created Date</span>
+                        <span id="qv-date" class="detail-value">-</span>
+                    </div>
+                    <div class="detail-item md:col-span-2">
+                        <span class="detail-label">Documents Overview</span>
+                        <div id="qv-docs-container" class="flex flex-wrap gap-2 mt-2"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="p-6 border-t border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/20 flex justify-end gap-3">
+                <button onclick="closeQuickView()" class="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-semibold hover:bg-white dark:hover:bg-slate-800 transition-all">Close</button>
+                <button id="qv-edit-btn" class="px-6 py-2.5 rounded-xl bg-primary text-white font-bold transition-all shadow-lg shadow-primary/20 hover:scale-105">Edit Customer</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js?v=2.2"></script>
 </body>
 </html>
