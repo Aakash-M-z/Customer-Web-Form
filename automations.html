@@ -46,17 +46,17 @@
                         <a class="text-slate-600 dark:text-slate-400 text-sm font-medium hover:text-primary transition-colors shrink-0" href="index.html">Dashboard</a>
                         <a class="text-slate-600 dark:text-slate-400 text-sm font-medium hover:text-primary transition-colors shrink-0" href="customers.html">Customers</a>
                         <a class="text-primary text-sm font-semibold border-b-2 border-primary pb-1 shrink-0" href="automations.html">Automation</a>
-                        <a class="text-slate-600 dark:text-slate-400 text-sm font-medium hover:text-primary transition-colors shrink-0" href="#">Settings</a>
                     </nav>
-                    <div class="flex gap-3 items-center shrink-0">
-                        <button class="relative flex items-center justify-center rounded-xl size-10 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all icon-hover">
-                            <span class="material-symbols-outlined">notifications</span>
-                            <span class="absolute top-2 right-2 size-2 bg-red-500 rounded-full border-2 border-white dark:border-slate-900"></span>
+                    <div class="flex items-center gap-3 border-l border-slate-200 dark:border-slate-700 pl-4 ml-2">
+                        <div data-user-avatar class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-9 border-2 border-primary/20 shrink-0" style='background-image: url("https://ui-avatars.com/api/?name=Admin+User&background=2563eb&color=fff");'></div>
+                        <button onclick="handleLogout()" title="Logout" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-slate-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all text-sm font-medium">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                                <polyline points="16 17 21 12 16 7"/>
+                                <line x1="21" y1="12" x2="9" y2="12"/>
+                            </svg>
+                            <span class="hidden sm:inline">Logout</span>
                         </button>
-                        <div class="h-8 w-[1px] bg-slate-200 dark:bg-slate-800 mx-1"></div>
-                        <div class="flex items-center gap-3">
-                            <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border-2 border-primary/20 shrink-0" style='background-image: url("https://ui-avatars.com/api/?name=Admin+User&background=2563eb&color=fff");'></div>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -70,34 +70,6 @@
                     <p class="text-slate-500 dark:text-slate-400 mt-1">Review and validate your bulk records before processing.</p>
                 </div>
                 <div class="flex gap-3">
-                    <div class="relative">
-                        <button onclick="toggleAutomationFilterMenu(event)" class="flex items-center justify-center rounded-xl px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-sm font-medium btn-premium-outline transition-all">
-                            <span class="material-symbols-outlined mr-2 text-[20px]">tune</span> Filters
-                        </button>
-                        <!-- Automation Filter Menu -->
-                        <div id="automationFilterMenu" class="hidden absolute right-0 mt-2 w-56 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl z-[60] py-2 animate-slide-down">
-                            <div class="px-3 py-1 text-xs font-bold text-slate-400 uppercase tracking-widest">Customer Category</div>
-                            <button onclick="setAutomationFilter('All')" class="w-full text-left px-4 py-2 text-sm hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center justify-between">
-                                All Categories <span id="check-auto-All" class="material-symbols-outlined text-primary text-[18px]">check</span>
-                            </button>
-                            <button onclick="setAutomationFilter('Enterprise')" class="w-full text-left px-4 py-2 text-sm hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center justify-between">
-                                <div class="flex items-center gap-2">Enterprise</div>
-                                <span id="check-auto-Enterprise" class="hidden material-symbols-outlined text-primary text-[18px]">check</span>
-                            </button>
-                            <button onclick="setAutomationFilter('Mid-Market')" class="w-full text-left px-4 py-2 text-sm hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center justify-between">
-                                <div class="flex items-center gap-2">Mid-Market</div>
-                                <span id="check-auto-Mid-Market" class="hidden material-symbols-outlined text-primary text-[18px]">check</span>
-                            </button>
-                            <button onclick="setAutomationFilter('High Value')" class="w-full text-left px-4 py-2 text-sm hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center justify-between">
-                                <div class="flex items-center gap-2">High Value</div>
-                                <span id="check-auto-High Value" class="hidden material-symbols-outlined text-primary text-[18px]">check</span>
-                            </button>
-                            <button onclick="setAutomationFilter('Strategic')" class="w-full text-left px-4 py-2 text-sm hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center justify-between">
-                                <div class="flex items-center gap-2">Strategic</div>
-                                <span id="check-auto-Strategic" class="hidden material-symbols-outlined text-primary text-[18px]">check</span>
-                            </button>
-                        </div>
-                    </div>
                     <button onclick="handleAutomate()" class="flex items-center justify-center rounded-xl px-6 py-2.5 text-white text-sm font-medium transition-all hover:scale-105 active:scale-95 btn-premium-emerald btn-glow-emerald">
                         <span class="material-symbols-outlined mr-2 text-[20px]">bolt</span> Automate
                     </button>
@@ -145,25 +117,50 @@
 
             <!-- Automation DataTable -->
             <div class="premium-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 overflow-hidden shadow-lg rounded-[14px] animate-fade-in-up stagger-5">
-                <div class="p-6 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                <div class="p-6 border-b border-slate-200 dark:border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <h2 class="text-lg font-bold text-slate-900 dark:text-white">Excel Records List</h2>
-                    <div class="flex items-center gap-2">
-                        <span class="size-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                        <span class="text-xs font-medium text-slate-500 uppercase tracking-widest">Live Preview</span>
+                    <div class="flex flex-wrap items-center gap-4">
+                        <!-- Table Search -->
+                        <div class="relative group">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 group-focus-within:text-primary transition-colors">
+                                <span class="material-symbols-outlined text-[18px]">search</span>
+                            </div>
+                            <input type="text" id="automationSearch" oninput="handleAutomationSearch()" placeholder="Search records..." class="premium-input pl-9 pr-4 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-sm focus:ring-2 focus:ring-primary outline-none transition-all w-full md:w-64" />
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <label class="text-xs font-bold text-slate-400 uppercase tracking-widest">Status:</label>
+                            <select id="automationStatusFilter" onchange="setAutomationFilter(this.value)" class="premium-input px-3 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold focus:ring-2 focus:ring-primary outline-none transition-all cursor-pointer premium-select">
+                                <option value="All">All Status</option>
+                                <option value="Automated">Automated</option>
+                                <option value="Pending">Pending</option>
+                                <option value="Failed">Failed</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="premium-table w-full text-left">
                         <thead>
-                            <tr class="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider font-bold">
-                                <th class="px-6 py-4">
+                            <tr class="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 text-[10px] uppercase tracking-wider font-bold">
+                                <th class="px-6 py-4 w-10">
                                     <input type="checkbox" id="selectAllCheckbox" class="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary focus:ring-2 cursor-pointer" onchange="toggleSelectAll()"/>
                                 </th>
-                                <th class="px-6 py-4">Excel ID</th>
-                                <th class="px-6 py-4">Name</th>
-                                <th class="px-6 py-4">Email Address</th>
+                                <th class="px-6 py-4 cursor-pointer hover:text-primary transition-colors" onclick="sortAutomation('excelId')">
+                                    <div class="flex items-center gap-1">Excel ID <span class="material-symbols-outlined text-sm">unfold_more</span></div>
+                                </th>
+                                <th class="px-6 py-4 cursor-pointer hover:text-primary transition-colors" onclick="sortAutomation('name')">
+                                    <div class="flex items-center gap-1">Name <span class="material-symbols-outlined text-sm">unfold_more</span></div>
+                                </th>
+                                <th class="px-6 py-4 cursor-pointer hover:text-primary transition-colors" onclick="sortAutomation('email')">
+                                    <div class="flex items-center gap-1">Email <span class="material-symbols-outlined text-sm">unfold_more</span></div>
+                                </th>
                                 <th class="px-6 py-4">Phone</th>
-                                <th class="px-6 py-4">Target Customer</th>
+                                <th class="px-6 py-4 cursor-pointer hover:text-primary transition-colors" onclick="sortAutomation('targetCustomer')">
+                                    <div class="flex items-center gap-1">Target Customer <span class="material-symbols-outlined text-sm">unfold_more</span></div>
+                                </th>
+                                <th class="px-6 py-4 cursor-pointer hover:text-primary transition-colors" onclick="sortAutomation('status')">
+                                    <div class="flex items-center gap-1">Status <span class="material-symbols-outlined text-sm">unfold_more</span></div>
+                                </th>
                                 <th class="px-6 py-4 text-right">Actions</th>
                             </tr>
                         </thead>
@@ -172,8 +169,21 @@
                         </tbody>
                     </table>
                 </div>
-                <div class="p-4 border-t border-slate-200 dark:border-slate-800 text-center bg-slate-50/30">
-                    <button class="text-primary text-sm font-semibold hover:underline">Load More Records</button>
+                <div class="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50/30">
+                    <div id="automationPagination" class="flex items-center justify-between px-4">
+                        <span class="text-xs text-slate-500 font-medium" id="automationPaginationInfo">Showing 1-15 of 50 records</span>
+                        <div class="flex items-center gap-2">
+                            <button onclick="prevAutomationPage()" class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-primary disabled:opacity-30 disabled:pointer-events-none transition-all">
+                                <span class="material-symbols-outlined">chevron_left</span>
+                            </button>
+                            <div id="automationPageNumbers" class="flex gap-1">
+                                <!-- Page numbers go here -->
+                            </div>
+                            <button onclick="nextAutomationPage()" class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-primary disabled:opacity-30 disabled:pointer-events-none transition-all">
+                                <span class="material-symbols-outlined">chevron_right</span>
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </main>
@@ -185,47 +195,113 @@
         <span id="toastMessage">Automation started successfully!</span>
     </div>
 
-    <!-- Delete Confirmation Modal -->
-    <div id="deleteModal" class="premium-modal hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
-        <div class="premium-modal-content bg-white dark:bg-slate-900 shadow-2xl max-w-md w-full border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden">
-            <!-- Modal Header -->
-            <div class="p-6 border-b border-slate-200 dark:border-slate-800">
-                <div class="flex items-center gap-4">
-                    <div class="size-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center shrink-0">
-                        <span class="material-symbols-outlined text-red-600 text-[28px]">warning</span>
-                    </div>
-                    <div>
-                        <h3 class="text-xl font-bold text-slate-900 dark:text-white">Delete Record</h3>
-                        <p class="text-sm text-slate-500 dark:text-slate-400">This action cannot be undone</p>
-                    </div>
+    <!-- Run Automation Modal -->
+    <div id="automationModal" class="premium-modal hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
+        <div class="premium-modal-content bg-white dark:bg-slate-900 shadow-2xl max-w-md w-full border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden animate-slide-up">
+            <div class="p-6 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                <div>
+                    <h3 class="text-xl font-bold text-slate-900 dark:text-white">Run Automation</h3>
+                    <p class="text-sm text-slate-500 mt-1">Configure automation settings</p>
                 </div>
+                <button onclick="closeAutomationModal()" class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 transition-colors">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
             </div>
-
-            <!-- Modal Body -->
+            
             <div class="p-6">
-                <p class="text-slate-600 dark:text-slate-300 leading-relaxed">Are you sure you want to remove this record from the automation list? This data will no longer be available for processing.</p>
+                <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Revision</label>
+                <select id="automationRevision" class="premium-input w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary outline-none transition-all cursor-pointer">
+                    <option value="0">Revision 0</option>
+                    <option value="1">Revision 1</option>
+                    <option value="2">Revision 2</option>
+                    <option value="others">Others</option>
+                </select>
             </div>
 
-            <!-- Modal Footer -->
-            <div class="flex items-center justify-end gap-3 p-6 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
-                <button type="button" onclick="closeDeleteModal()" class="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-semibold hover:bg-white dark:hover:bg-slate-800 transition-all">
-                    Cancel
-                </button>
-                <button type="button" onclick="confirmDelete()" class="px-6 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold transition-all flex items-center gap-2 shadow-lg shadow-red-600/20">
-                    <span class="material-symbols-outlined text-[20px]">delete</span>
-                    Delete Record
-                </button>
+            <div class="p-6 border-t border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/20 flex justify-end gap-3">
+                <button onclick="closeAutomationModal()" class="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-semibold hover:bg-white dark:hover:bg-slate-800 transition-all">Cancel</button>
+                <button onclick="confirmAutomation()" class="px-8 py-2.5 rounded-xl bg-primary text-white font-bold transition-all shadow-lg shadow-primary/20 hover:scale-105 active:scale-95">OK</button>
             </div>
         </div>
     </div>
 
-    <script src="script.js?v=2.1"></script>
+    <!-- Edit Automation Modal -->
+    <div id="editRecordModal" class="premium-modal hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
+        <div class="premium-modal-content bg-white dark:bg-slate-900 shadow-2xl max-w-lg w-full border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden animate-slide-up">
+            <div class="p-6 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                <div>
+                    <h3 class="text-xl font-bold text-slate-900 dark:text-white">Edit Record</h3>
+                    <p class="text-sm text-slate-500 mt-1">Update automation record details</p>
+                </div>
+                <button onclick="closeEditRecordModal()" class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 transition-colors">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            
+            <form onsubmit="saveRecordEdit(event)" class="p-6 space-y-4">
+                <input type="hidden" id="editRecordId" />
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="space-y-1">
+                        <label class="text-xs font-bold text-slate-400 uppercase tracking-widest">Name</label>
+                        <input type="text" id="editRecordName" required class="premium-input w-full px-4 py-2 rounded-lg bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-primary outline-none" />
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-xs font-bold text-slate-400 uppercase tracking-widest">Email</label>
+                        <input type="email" id="editRecordEmail" required class="premium-input w-full px-4 py-2 rounded-lg bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-primary outline-none" />
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="space-y-1">
+                        <label class="text-xs font-bold text-slate-400 uppercase tracking-widest">Phone</label>
+                        <input type="text" id="editRecordPhone" required class="premium-input w-full px-4 py-2 rounded-lg bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-primary outline-none" />
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-xs font-bold text-slate-400 uppercase tracking-widest">Target</label>
+                        <select id="editRecordTarget" class="premium-input w-full px-4 py-2 rounded-lg bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-primary outline-none">
+                            <option>Enterprise</option>
+                            <option>Mid-Market</option>
+                            <option>High Value</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="space-y-1">
+                    <label class="text-xs font-bold text-slate-400 uppercase tracking-widest">Status</label>
+                    <select id="editRecordStatus" class="premium-input w-full px-4 py-2 rounded-lg bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-primary outline-none">
+                        <option>Automated</option>
+                        <option>Pending</option>
+                        <option>Failed</option>
+                    </select>
+                </div>
+
+                <div class="pt-6 border-t border-slate-200 dark:border-slate-800 flex justify-end gap-3">
+                    <button type="button" onclick="closeEditRecordModal()" class="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-semibold hover:bg-white dark:hover:bg-slate-800 transition-all">Cancel</button>
+                    <button type="submit" class="px-8 py-2.5 rounded-xl bg-primary text-white font-bold transition-all shadow-lg shadow-primary/20 hover:scale-105 active:scale-95">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="script.js?v=2.5"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             if (typeof initAutomationPage === 'function') {
                 initAutomationPage();
             }
         });
+
+        function handleLogout() {
+            showCustomModal({
+                title: 'Confirm Logout',
+                message: 'Are you sure you want to log out of the Customer Portal?',
+                type: 'confirm',
+                confirmText: 'Logout',
+                cancelText: 'Cancel',
+                onConfirm: () => { 
+                    clearUserSession();
+                    window.location.href = 'login.html'; 
+                }
+            });
+        }
     </script>
 </body>
 </html>

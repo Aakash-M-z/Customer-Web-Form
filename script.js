@@ -31,20 +31,16 @@ function openDeleteModal(id, type = 'customer') {
     itemToDelete = id;
     deleteType = type;
 
-    const modal = document.getElementById('deleteModal');
-    if (modal) {
-        const title = modal.querySelector('h3');
-        const text = modal.querySelector('.p-6 p');
-
-        if (title && text) {
-            title.textContent = type === 'customer' ? 'Delete Customer' : 'Delete Record';
-            text.textContent = type === 'customer'
-                ? 'Are you sure you want to delete this customer? This action cannot be undone.'
-                : 'Are you sure you want to remove this record from the automation list?';
-        }
-        modal.classList.remove('hidden');
-        document.body.style.overflow = 'hidden';
-    }
+    showCustomModal({
+        title: type === 'customer' ? 'Delete Customer' : 'Delete Record',
+        message: type === 'customer'
+            ? 'Are you sure you want to delete this customer? This action cannot be undone.'
+            : 'Are you sure you want to remove this record from the automation list?',
+        type: 'delete',
+        confirmText: '<span class="material-symbols-outlined text-[20px]">delete</span> Delete',
+        cancelText: 'Cancel',
+        onConfirm: () => confirmDelete()
+    });
 }
 
 function closeDeleteModal() {
@@ -84,9 +80,9 @@ function confirmDelete() {
                 }
                 if (typeof renderAutomationTable === 'function') renderAutomationTable();
             }
-            showToast('Automation record removed!');
+            showCustomModal({ title: 'Action Completed', message: 'Automation record removed successfully.', type: 'success' });
         }
-        closeDeleteModal();
+        itemToDelete = null;
     }
 }
 
@@ -149,6 +145,76 @@ function removeFile(index) {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
+    // Initialize user session first
+    initUserSession();
+
+    // Add initial dummy data to localStorage if empty (for dashboard display)
+    if (!localStorage.getItem('customers') || JSON.parse(localStorage.getItem('customers')).length === 0) {
+        const initialCustomers = [
+            {
+                id: '#C-1001',
+                clientName: 'Aakash Leo',
+                emailAddress: 'aakash.leo@example.com',
+                phoneNumber: '+1 (555) 123-4567',
+                purchaseOrder: 'PO-1023',
+                salesOrder: 'SO-2023',
+                numDocuments: '3',
+                status: 'Active',
+                files: 3,
+                timestamp: new Date().toLocaleString()
+            },
+            {
+                id: '#C-1002',
+                clientName: 'John Carter',
+                emailAddress: 'john.carter@example.com',
+                phoneNumber: '+1 (555) 234-5678',
+                purchaseOrder: 'PO-1024',
+                salesOrder: 'SO-2024',
+                numDocuments: '1',
+                status: 'Pending',
+                files: 1,
+                timestamp: new Date().toLocaleString()
+            },
+            {
+                id: '#C-1003',
+                clientName: 'Sarah Lee',
+                emailAddress: 'sarah.lee@example.com',
+                phoneNumber: '+1 (555) 345-6789',
+                purchaseOrder: 'PO-1025',
+                salesOrder: 'SO-2025',
+                numDocuments: '2',
+                status: 'Inactive',
+                files: 2,
+                timestamp: new Date().toLocaleString()
+            },
+            {
+                id: '#C-1004',
+                clientName: 'David Miller',
+                emailAddress: 'david.miller@example.com',
+                phoneNumber: '+1 (555) 456-7890',
+                purchaseOrder: 'PO-1026',
+                salesOrder: 'SO-2026',
+                numDocuments: '0',
+                status: 'Inactive',
+                files: 0,
+                timestamp: new Date().toLocaleString()
+            },
+            {
+                id: '#C-1005',
+                clientName: 'Emily Watson',
+                emailAddress: 'emily.watson@example.com',
+                phoneNumber: '+1 (555) 567-8901',
+                purchaseOrder: 'PO-1027',
+                salesOrder: 'SO-2027',
+                numDocuments: '4',
+                status: 'Inactive',
+                files: 4,
+                timestamp: new Date().toLocaleString()
+            }
+        ];
+        localStorage.setItem('customers', JSON.stringify(initialCustomers));
+    }
+
     // Set active nav link
     const currentPath = window.location.pathname.split('/').pop() || 'index.html';
     document.querySelectorAll('nav a').forEach(link => {
@@ -178,6 +244,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Load elements ONLY if on their respective pages
     if (document.getElementById('recentCustomersBody')) loadCustomers();
+    if (document.getElementById('dashboardAutomationBody')) loadDashboardAutomations();
+    if (document.getElementById('customerTableBody')) initCustomersPage();
     if (document.getElementById('automationTableBody')) initAutomationPage();
 
     initActionDropdown();
@@ -218,11 +286,15 @@ document.addEventListener('DOMContentLoaded', function () {
                     addCustomerToTable(formData);
                 }
 
-                // Show toast
-                showToast('Customer added successfully!');
-
                 // Close modal
                 closeCustomerModal();
+
+                // Show custom modal
+                showCustomModal({
+                    title: 'Action Completed',
+                    message: 'Customer added successfully!',
+                    type: 'success'
+                });
 
                 console.log('Customer data saved:', formData);
             });
@@ -266,11 +338,15 @@ document.addEventListener('DOMContentLoaded', function () {
             automations.push(automationData);
             localStorage.setItem('automations', JSON.stringify(automations));
 
-            // Show toast
-            showToast(`Automation started with ${selectedRevision}!`);
-
             // Close modal
             closeAutomateModal();
+
+            // Show custom modal
+            showCustomModal({
+                title: 'Action Completed',
+                message: `Automation started with ${selectedRevision}!`,
+                type: 'success'
+            });
 
             console.log('Automation data saved:', automationData);
         });
@@ -349,10 +425,17 @@ function getCustomerStatusCounts() {
     }
 
     customers.forEach(c => {
-        if (counts[c.status] !== undefined) {
-            counts[c.status]++;
+        // Normalize status - treat Suspended as Inactive
+        let status = c.status;
+        if (status === 'Suspended') status = 'Inactive';
+
+        if (counts[status] !== undefined) {
+            counts[status]++;
         }
     });
+
+    console.log('Customer Status Counts:', counts);
+    console.log('Chart Data Array:', [counts.Active, counts.Pending, counts.Inactive]);
 
     return [counts.Active, counts.Pending, counts.Inactive];
 }
@@ -372,6 +455,8 @@ function initCharts() {
     const gridColor = isDark ? 'rgba(148, 163, 184, 0.1)' : 'rgba(100, 116, 139, 0.1)';
 
     const statusData = getCustomerStatusCounts();
+    console.log('Initializing chart with statusData:', statusData);
+    console.log('Colors - Green:', emeraldColor, 'Amber:', amberColor, 'Red:', redColor);
 
     // Growth Chart (Line)
     const growthCanvas = document.getElementById('growthChart');
@@ -513,13 +598,18 @@ function initCharts() {
 // Dummy Data Arrays
 let allCustomers = [];
 let allAutomations = [];
-let filteredCustomers = [];
-let currentPage = 1;
+let filteredAutomations = [];
+let currentAutomationFilter = 'All';
+let automationSearchQuery = '';
+let automationPage = 1;
+let automationPageSize = 10;
+let automationSortCol = 'excelId';
+let automationSortDir = 'asc';
 const itemsPerPage = 10;
+let currentPage = 1;
 let currentStatusFilter = 'All';
 let currentSearchQuery = '';
-let currentAutomationFilter = 'All';
-let filteredAutomations = [];
+let filteredCustomers = [];
 
 // Realistic Names and Companies for Dummy Data
 const dummyNames = ["James Smith", "Michael Johnson", "Robert Williams", "Maria Garcia", "David Miller", "Linda Davis", "Richard Rodriguez", "Susan Martinez", "Joseph Hernandez", "Karen Moore", "Christopher Taylor", "Nancy Anderson", "Thomas Thomas", "Betty Jackson", "Daniel White", "Margaret Harris", "Matthew Martin", "Sandra Thompson", "Anthony Garcia", "Ashley Martinez", "Mark Robinson", "Dorothy Clark", "Paul Rodriguez", "Kimberly Lewis", "Steven Lee", "Emily Walker", "Andrew Hall", "Donna Allen", "Kenneth Young", "Michelle Hernandez"];
@@ -538,6 +628,7 @@ function generateDummyData() {
             name: name,
             email: name.toLowerCase().replace(" ", ".") + "@example.com",
             phone: `+1 (${Math.floor(Math.random() * 900) + 100}) 555-${Math.floor(Math.random() * 9000) + 1000}`,
+            purchaseOrder: `PO-10${20 + i}`,
             docs: i % 3 === 0 ? ["PDF", "XLS", "DOC"] : i % 2 === 0 ? ["PDF"] : ["XLS"],
             createdDate: new Date(Date.now() - Math.floor(Math.random() * 10000000000)).toLocaleDateString(),
             status: status
@@ -547,12 +638,15 @@ function generateDummyData() {
     // Generate 50 Automations
     for (let i = 1; i <= 50; i++) {
         const name = dummyNames[Math.floor(Math.random() * dummyNames.length)];
+        const autoTags = ["High Value", "Enterprise", "Mid-Market"];
+        const autoStatuses = ["Automated", "Pending", "Failed"];
         allAutomations.push({
             excelId: `EXL-${1000 + i}`,
             name: name,
             email: name.toLowerCase().replace(" ", ".") + "@corp.com",
             phone: `+1 (${Math.floor(Math.random() * 900) + 100}) 555-${Math.floor(Math.random() * 9000) + 1000}`,
-            targetCustomer: dummyTags[Math.floor(Math.random() * dummyTags.length)]
+            targetCustomer: autoTags[Math.floor(Math.random() * autoTags.length)],
+            status: autoStatuses[Math.floor(Math.random() * autoStatuses.length)]
         });
     }
 }
@@ -616,19 +710,7 @@ function toggleFilterMenu(event) {
 
 function setStatusFilter(status) {
     currentStatusFilter = status;
-
-    // Update checkmarks in UI
-    const statuses = ['All', 'Active', 'Pending', 'Inactive'];
-    statuses.forEach(s => {
-        const check = document.getElementById(`check-${s}`);
-        if (check) {
-            if (s === status) check.classList.remove('hidden');
-            else check.classList.add('hidden');
-        }
-    });
-
     filterCustomers();
-    document.getElementById('filterMenu').classList.add('hidden');
     showToast(`Filtering by: ${status}`);
 }
 
@@ -651,7 +733,7 @@ async function renderCustomerTable(page) {
     if (paginatedItems.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="8" class="px-6 py-12">
+                <td colspan="5" class="px-6 py-12">
                     <div class="empty-state-container">
                         <span class="material-symbols-outlined empty-state-icon">person_off</span>
                         <h3 class="text-lg font-bold text-slate-900 dark:text-white">No customers found</h3>
@@ -686,21 +768,18 @@ async function renderCustomerTable(page) {
         };
 
         row.innerHTML = `
-            <td class="px-6 py-4 text-sm text-slate-500 font-medium">${customer.id || '-'}</td>
             <td class="px-6 py-4">
                 <div class="flex items-center gap-3">
                     <div class="size-8 rounded-lg bg-primary/10 flex items-center justify-center font-bold text-primary text-xs transition-transform group-hover:scale-110">${initials}</div>
                     <span class="text-sm font-semibold text-slate-900 dark:text-white">${customer.name || '-'}</span>
                 </div>
             </td>
-            <td class="px-6 py-4 text-sm text-slate-500">${customer.email || '-'}</td>
-            <td class="px-6 py-4 text-sm text-slate-500">${customer.phone || '-'}</td>
+            <td class="px-6 py-4 text-sm text-slate-500 font-medium">${customer.purchaseOrder || customer.purchaseOrder || 'PO-00000'}</td>
             <td class="px-6 py-4">
                 <div class="flex gap-1 flex-wrap">
                     ${(customer.docs || []).map(doc => `<span class="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-[10px] font-bold text-slate-500 border border-slate-200">${doc}</span>`).join('') || '-'}
                 </div>
             </td>
-            <td class="px-6 py-4 text-sm text-slate-500">${customer.createdDate || '-'}</td>
             <td class="px-6 py-4">
                 <span class="${statusClass} px-2.5 py-1 rounded-full text-[11px] font-bold inline-flex items-center shadow-sm">
                     <span class="size-1.5 rounded-full ${statusDot} mr-1.5 animate-pulse"></span> ${customer.status || 'Unknown'}
@@ -759,23 +838,14 @@ function initActionDropdown() {
     const dropdown = document.createElement('div');
     dropdown.id = 'actionDropdown';
     dropdown.className = 'dropdown-menu';
-    dropdown.innerHTML = `
-        <div class="px-3 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Actions</div>
-        <button class="dropdown-item" onclick="handleAction('view')">
-            <span class="material-symbols-outlined">visibility</span> Quick View
-        </button>
-        <button class="dropdown-item" onclick="handleAction('edit')">
-            <span class="material-symbols-outlined">edit_note</span> Edit Customer
-        </button>
-        <button class="dropdown-item" onclick="handleAction('docs')">
-            <span class="material-symbols-outlined">folder</span> View Documents
-        </button>
-        <div class="dropdown-divider"></div>
-        <button class="dropdown-item text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20" onclick="handleAction('delete')">
-            <span class="material-symbols-outlined">delete</span> Delete Customer
-        </button>
-    `;
     document.body.appendChild(dropdown);
+
+    // Close menu when clicking outside
+    document.addEventListener('click', (e) => {
+        if (dropdown && !dropdown.classList.contains('hidden') && !dropdown.contains(e.target) && !e.target.closest('.p-2.rounded-lg.text-slate-400')) {
+            dropdown.classList.add('hidden');
+        }
+    });
 }
 
 let activeActionId = null;
@@ -787,9 +857,40 @@ function handleMoreActions(event, id, type = 'customer') {
     activeActionType = type;
 
     const dropdown = document.getElementById('actionDropdown');
-    if (!dropdown) return;
+    if (!dropdown) {
+        initActionDropdown(); // Initialize if not already present
+        return handleMoreActions(event, id, type); // Re-call to populate and position
+    }
+
+    const isAutomation = type === 'automation';
+
+    // Define menu items based on type
+    const actions = isAutomation ? [
+        { label: 'View Details', icon: 'visibility', action: 'view' },
+        { label: 'Edit Record', icon: 'edit_note', action: 'edit' },
+        { label: 'Archive', icon: 'archive', action: 'archive' },
+        { label: 'Delete', icon: 'delete', action: 'delete', class: 'text-red-500' }
+    ] : [
+        { label: 'Upload Document', icon: 'upload_file', action: 'upload' },
+        { label: 'Edit', icon: 'edit_note', action: 'edit' },
+        { label: 'View', icon: 'visibility', action: 'view' },
+        { label: 'Delete', icon: 'delete', action: 'delete', class: 'text-red-500' }
+    ];
+
+    let dropdownHtml = `
+        <div class="px-3 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Actions</div>
+    `;
+    actions.forEach(item => {
+        dropdownHtml += `
+            <button class="dropdown-item ${item.class || ''}" onclick="handleAction('${item.action}')">
+                <span class="material-symbols-outlined">${item.icon}</span> ${item.label}
+            </button>
+        `;
+    });
+    dropdown.innerHTML = dropdownHtml;
 
     // Show it so we can calculate dimensions
+    dropdown.classList.remove('hidden');
     dropdown.style.display = 'block';
 
     const rect = event.currentTarget.getBoundingClientRect();
@@ -824,18 +925,28 @@ function handleLoadMore() {
 
 function handleAction(type) {
     const dropdown = document.getElementById('actionDropdown');
-    dropdown.style.display = 'none';
+    if (dropdown) {
+        dropdown.classList.add('hidden');
+        dropdown.style.display = 'none'; // Ensure it's fully hidden
+    }
 
     switch (type) {
         case 'view':
-            openQuickView(activeActionId);
+            if (activeActionType === 'automation') {
+                openAutomationQuickView(activeActionId);
+            } else {
+                openQuickView(activeActionId);
+            }
             break;
         case 'edit':
-            closeQuickView();
-            showToast(`Opening editor for: ${activeActionId}`);
+            if (activeActionType === 'automation') {
+                openEditRecordModal(activeActionId);
+            } else {
+                openEditCustomerModal(activeActionId);
+            }
             break;
-        case 'docs':
-            showToast(`Loading documents for: ${activeActionId}...`);
+        case 'upload':
+            openUploadModal(activeActionId);
             break;
         case 'delete':
             openDeleteModal(activeActionId, activeActionType);
@@ -882,45 +993,118 @@ function initAutomationPage() {
     if (allAutomations.length === 0) generateDummyData();
     updateAutomationFilters();
     updateAutomationStats();
+    initActionDropdown(); // Ensure dropdown is initialized for automation table
+}
+
+function setAutomationFilter(status) {
+    currentAutomationFilter = status;
+    updateAutomationFilters();
 }
 
 function updateAutomationFilters() {
     filteredAutomations = allAutomations.filter(item => {
-        return currentAutomationFilter === 'All' || item.targetCustomer === currentAutomationFilter;
+        const matchesStatus = currentAutomationFilter === 'All' || item.status === currentAutomationFilter;
+        const searchStr = `${item.excelId} ${item.name} ${item.email}`.toLowerCase();
+        const matchesSearch = searchStr.includes(automationSearchQuery.toLowerCase());
+        return matchesStatus && matchesSearch;
     });
+
+    // Sorting
+    filteredAutomations.sort((a, b) => {
+        let valA = a[automationSortCol] || '';
+        let valB = b[automationSortCol] || '';
+
+        if (typeof valA === 'string') valA = valA.toLowerCase();
+        if (typeof valB === 'string') valB = valB.toLowerCase();
+
+        if (valA < valB) return automationSortDir === 'asc' ? -1 : 1;
+        if (valA > valB) return automationSortDir === 'asc' ? 1 : -1;
+        return 0;
+    });
+
+    automationPage = 1; // Reset to first page on filter/search
     renderAutomationTable();
 }
 
-function toggleAutomationFilterMenu(event) {
-    event.stopPropagation();
-    const menu = document.getElementById('automationFilterMenu');
-    menu.classList.toggle('hidden');
-
-    const closeMenu = (e) => {
-        if (!menu.contains(e.target)) {
-            menu.classList.add('hidden');
-            document.removeEventListener('click', closeMenu);
-        }
-    };
-    document.addEventListener('click', closeMenu);
+function handleAutomationSearch() {
+    automationSearchQuery = document.getElementById('automationSearch').value;
+    updateAutomationFilters();
 }
 
-function setAutomationFilter(category) {
-    currentAutomationFilter = category;
+// Search automation records on dashboard
+function searchAutomationRecords() {
+    const searchInput = document.getElementById('automationSearch');
+    if (!searchInput) return;
 
-    // Update checkmarks
-    const categories = ['All', 'Enterprise', 'Mid-Market', 'High Value', 'Strategic'];
-    categories.forEach(c => {
-        const check = document.getElementById(`check-auto-${c}`);
-        if (check) {
-            if (c === category) check.classList.remove('hidden');
-            else check.classList.add('hidden');
-        }
+    const query = searchInput.value.toLowerCase().trim();
+    const tbody = document.getElementById('dashboardAutomationBody');
+    if (!tbody || typeof allAutomations === 'undefined') return;
+
+    // Filter records based on search query
+    const filtered = allAutomations.filter(item => {
+        const searchStr = `${item.excelId} ${item.name} ${item.email} ${item.targetCustomer} ${item.status}`.toLowerCase();
+        return searchStr.includes(query);
     });
 
+    // Render filtered results (max 6 for dashboard)
+    const records = filtered.slice(0, 6);
+    tbody.innerHTML = '';
+
+    if (records.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="6" class="px-6 py-8 text-center">
+                    <div class="flex flex-col items-center gap-2">
+                        <span class="material-symbols-outlined text-slate-300 text-[48px]">search_off</span>
+                        <p class="text-sm text-slate-500">No records found matching "${query}"</p>
+                    </div>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    records.forEach(item => {
+        let tagClass = 'bg-blue-50 text-blue-600 border-blue-200';
+        if (item.targetCustomer === 'High Value') tagClass = 'bg-emerald-50 text-emerald-600 border-emerald-200';
+        if (item.targetCustomer === 'Enterprise') tagClass = 'bg-purple-50 text-purple-600 border-purple-200';
+        if (item.targetCustomer === 'Mid-Market') tagClass = 'bg-amber-50 text-amber-600 border-amber-200';
+
+        let statusClass = 'bg-slate-100 text-slate-600';
+        if (item.status === 'Automated') statusClass = 'badge-active text-emerald-600';
+        if (item.status === 'Pending') statusClass = 'badge-pending text-amber-600';
+        if (item.status === 'Failed') statusClass = 'badge-inactive text-red-600';
+
+        const row = document.createElement('tr');
+        row.className = 'hover:bg-blue-50/50 dark:hover:bg-blue-900/10 transition-colors';
+        row.innerHTML = `
+            <td class="px-3 sm:px-6 py-3.5 text-xs sm:text-sm text-slate-500 font-medium">${item.excelId}</td>
+            <td class="px-3 sm:px-6 py-3.5 text-xs sm:text-sm font-bold text-slate-900 dark:text-white">${item.name}</td>
+            <td class="px-3 sm:px-6 py-3.5 text-xs sm:text-sm text-slate-500 hidden sm:table-cell">${item.email}</td>
+            <td class="px-3 sm:px-6 py-3.5 hidden lg:table-cell">
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold border ${tagClass} uppercase tracking-wider">${item.targetCustomer}</span>
+            </td>
+            <td class="px-3 sm:px-6 py-3.5">
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${statusClass} uppercase tracking-wider">${item.status}</span>
+            </td>
+            <td class="px-3 sm:px-6 py-3.5 text-right">
+                <button onclick="handleMoreActions(event, '${item.excelId}', 'automation')" class="p-1.5 rounded-lg text-slate-400 hover:text-primary hover:bg-primary/10 transition-all">
+                    <span class="material-symbols-outlined text-[18px]">more_horiz</span>
+                </button>
+            </td>
+        `;
+        tbody.appendChild(row);
+    });
+}
+
+function sortAutomation(column) {
+    if (automationSortCol === column) {
+        automationSortDir = automationSortDir === 'asc' ? 'desc' : 'asc';
+    } else {
+        automationSortCol = column;
+        automationSortDir = 'asc';
+    }
     updateAutomationFilters();
-    document.getElementById('automationFilterMenu').classList.add('hidden');
-    showToast(`Category: ${category}`);
 }
 
 function renderAutomationTable() {
@@ -929,11 +1113,24 @@ function renderAutomationTable() {
 
     tbody.innerHTML = '';
 
-    filteredAutomations.slice(0, 15).forEach(item => {
+    const start = (automationPage - 1) * automationPageSize;
+    const end = start + automationPageSize;
+    const pageData = filteredAutomations.slice(start, end);
+
+    if (pageData.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" class="px-6 py-12 text-center text-slate-500">No records found matching your criteria</td></tr>`;
+    }
+
+    pageData.forEach(item => {
         let tagClass = 'bg-blue-50 text-blue-600 border-blue-200';
         if (item.targetCustomer === 'Strategic') tagClass = 'bg-purple-50 text-purple-600 border-purple-200';
         if (item.targetCustomer === 'High Value') tagClass = 'bg-emerald-50 text-emerald-600 border-emerald-200';
         if (item.targetCustomer === 'Mid-Market') tagClass = 'bg-amber-50 text-amber-600 border-amber-200';
+
+        let statusClass = 'bg-slate-100 text-slate-600';
+        if (item.status === 'Automated') statusClass = 'badge-active text-emerald-600';
+        if (item.status === 'Pending') statusClass = 'badge-pending text-amber-600';
+        if (item.status === 'Failed') statusClass = 'badge-inactive text-red-600';
 
         const row = document.createElement('tr');
         row.className = 'hover:bg-blue-50/50 dark:hover:bg-blue-900/10 transition-colors group';
@@ -950,6 +1147,11 @@ function renderAutomationTable() {
                     ${item.targetCustomer}
                 </span>
             </td>
+            <td class="px-6 py-4">
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${statusClass} uppercase tracking-wider">
+                    ${item.status}
+                </span>
+            </td>
             <td class="px-6 py-4 text-right">
                 <button onclick="handleMoreActions(event, '${item.excelId}', 'automation')" class="p-1.5 rounded-lg text-slate-400 hover:text-primary hover:bg-primary/10 transition-all">
                     <span class="material-symbols-outlined text-[18px]">more_horiz</span>
@@ -958,6 +1160,55 @@ function renderAutomationTable() {
         `;
         tbody.appendChild(row);
     });
+
+    updateAutomationPaginationUI();
+}
+
+function updateAutomationPaginationUI() {
+    const info = document.getElementById('automationPaginationInfo');
+    const container = document.getElementById('automationPageNumbers');
+    if (!info || !container) return;
+
+    const total = filteredAutomations.length;
+    const start = total === 0 ? 0 : (automationPage - 1) * automationPageSize + 1;
+    const end = Math.min(automationPage * automationPageSize, total);
+
+    info.textContent = `Showing ${start}-${end} of ${total} records`;
+
+    container.innerHTML = '';
+    const totalPages = Math.ceil(total / automationPageSize);
+
+    for (let i = 1; i <= totalPages; i++) {
+        if (totalPages > 5 && i > 3 && i < totalPages) {
+            if (i === 4) {
+                const dots = document.createElement('span');
+                dots.className = 'px-2 text-slate-400';
+                dots.textContent = '...';
+                container.appendChild(dots);
+            }
+            continue;
+        }
+
+        const btn = document.createElement('button');
+        btn.className = `size-8 rounded-lg text-xs font-bold transition-all ${i === automationPage ? 'bg-primary text-white' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'}`;
+        btn.textContent = i;
+        btn.onclick = () => goToAutomationPage(i);
+        container.appendChild(btn);
+    }
+}
+
+function goToAutomationPage(p) {
+    automationPage = p;
+    renderAutomationTable();
+}
+
+function prevAutomationPage() {
+    if (automationPage > 1) goToAutomationPage(automationPage - 1);
+}
+
+function nextAutomationPage() {
+    const totalPages = Math.ceil(filteredAutomations.length / automationPageSize);
+    if (automationPage < totalPages) goToAutomationPage(automationPage + 1);
 }
 
 function updateAutomationStats() {
@@ -969,10 +1220,39 @@ function updateAutomationStats() {
 }
 
 function handleAutomate() {
-    showToast('Processing 1,240 records...');
-    setTimeout(() => {
-        showToast('Automation completed successfully!');
-    }, 2000);
+    const selectedCount = document.querySelectorAll('.excel-row-checkbox:checked').length;
+    if (selectedCount === 0) {
+        showToast('Please select at least one record to automate', 'error');
+        return;
+    }
+    openAutomationModal();
+}
+
+function openAutomationModal() {
+    const modal = document.getElementById('automationModal');
+    if (modal) {
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function closeAutomationModal() {
+    const modal = document.getElementById('automationModal');
+    if (modal) {
+        modal.classList.add('hidden');
+        document.body.style.overflow = 'auto';
+    }
+}
+
+function confirmAutomation() {
+    const revision = document.getElementById('automationRevision').value;
+    closeAutomationModal();
+    showCustomModal({
+        title: 'Action Completed',
+        message: 'Automation completed successfully.',
+        type: 'success',
+        confirmText: 'OK'
+    });
 }
 
 
@@ -999,6 +1279,319 @@ function showToast(message, type = 'success') {
             toast.classList.remove('animate-fade-out');
         }, 300);
     }, 3000);
+}
+
+// Upload Modal Functions
+function openUploadModal(id) {
+    activeActionId = id; // Store the ID for reference
+
+    // Close the dropdown menu first
+    const dropdown = document.getElementById('actionDropdown');
+    if (dropdown) {
+        dropdown.classList.add('hidden');
+        dropdown.style.display = 'none';
+    }
+
+    const modal = document.getElementById('uploadModal');
+    if (modal) {
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+
+        // Reset inputs and labels
+        resetUploadModal();
+
+        // Add drag and drop functionality
+        setupDragAndDrop();
+    }
+}
+
+function resetUploadModal() {
+    // Reset file inputs
+    const docInput = document.getElementById('docUploadInput');
+    const excelInput = document.getElementById('excelUploadInput');
+
+    if (docInput) {
+        docInput.value = '';
+        updateUploadLabel('docUploadInput', 'docFileName', 'Choose File (PDF, DOC, Images)');
+    }
+
+    if (excelInput) {
+        excelInput.value = '';
+        updateUploadLabel('excelUploadInput', 'excelFileName', 'Choose Excel File (.xlsx, .csv)');
+    }
+
+    // Remove file-selected class from upload zones
+    document.querySelectorAll('.upload-zone').forEach(zone => {
+        zone.classList.remove('file-selected');
+    });
+}
+
+function setupDragAndDrop() {
+    const uploadZones = document.querySelectorAll('.upload-zone');
+
+    uploadZones.forEach(zone => {
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            zone.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            zone.addEventListener(eventName, () => {
+                zone.classList.add('drag-over');
+            });
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            zone.addEventListener(eventName, () => {
+                zone.classList.remove('drag-over');
+            });
+        });
+
+        zone.addEventListener('drop', (e) => {
+            const files = e.dataTransfer.files;
+            const input = zone.querySelector('input[type="file"]');
+            if (input && files.length > 0) {
+                input.files = files;
+                const changeEvent = new Event('change', { bubbles: true });
+                input.dispatchEvent(changeEvent);
+            }
+        });
+    });
+}
+
+function updateUploadLabel(inputId, labelId, defaultText) {
+    const input = document.getElementById(inputId);
+    const label = document.getElementById(labelId);
+    const zone = input?.closest('.upload-zone');
+
+    if (input && label) {
+        if (input.files && input.files.length > 0) {
+            const file = input.files[0];
+            label.innerHTML = `<span class="text-emerald-600 dark:text-emerald-400 font-semibold">${file.name}</span><br><span class="text-xs text-slate-400">${(file.size / 1024).toFixed(2)} KB</span>`;
+            if (zone) zone.classList.add('file-selected');
+        } else {
+            label.textContent = defaultText;
+            if (zone) zone.classList.remove('file-selected');
+        }
+    }
+}
+
+function closeUploadModal() {
+    const modal = document.getElementById('uploadModal');
+    if (modal) {
+        modal.classList.add('animate-fade-out');
+        setTimeout(() => {
+            modal.classList.add('hidden');
+            modal.classList.remove('animate-fade-out');
+            document.body.style.overflow = 'auto';
+            resetUploadModal();
+        }, 300);
+    }
+}
+
+// Close modal when clicking outside
+document.addEventListener('DOMContentLoaded', function () {
+    const uploadModal = document.getElementById('uploadModal');
+    if (uploadModal) {
+        uploadModal.addEventListener('click', function (e) {
+            if (e.target === uploadModal) {
+                closeUploadModal();
+            }
+        });
+    }
+});
+
+function openEditCustomerModal(id) {
+    const customer = allCustomers.find(c => c.id === id) ||
+        JSON.parse(localStorage.getItem('customers') || '[]').find(c => c.id === id);
+
+    if (!customer) {
+        console.warn('Customer not found:', id);
+        return;
+    }
+
+    document.getElementById('editCustomerId').value = customer.id;
+    document.getElementById('editCustomerName').value = customer.name || customer.clientName || '';
+    document.getElementById('editCustomerEmail').value = customer.email || customer.emailAddress || '';
+    document.getElementById('editCustomerPhone').value = customer.phone || customer.phoneNumber || '';
+    document.getElementById('editCustomerStatus').value = customer.status || 'Active';
+
+    const modal = document.getElementById('editCustomerModal');
+    if (modal) {
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function closeEditCustomerModal() {
+    const modal = document.getElementById('editCustomerModal');
+    if (modal) {
+        modal.classList.add('hidden');
+        document.body.style.overflow = 'auto';
+    }
+}
+
+function saveCustomerEdit(event) {
+    event.preventDefault();
+    const id = document.getElementById('editCustomerId').value;
+
+    // Update in allCustomers array if it exists
+    const index = allCustomers.findIndex(c => c.id === id);
+    if (index !== -1) {
+        allCustomers[index] = {
+            ...allCustomers[index],
+            name: document.getElementById('editCustomerName').value,
+            email: document.getElementById('editCustomerEmail').value,
+            phone: document.getElementById('editCustomerPhone').value,
+            status: document.getElementById('editCustomerStatus').value
+        };
+    }
+
+    // Also update in localStorage
+    let customers = JSON.parse(localStorage.getItem('customers') || '[]');
+    const localIndex = customers.findIndex(c => c.id === id);
+    if (localIndex !== -1) {
+        customers[localIndex] = {
+            ...customers[localIndex],
+            clientName: document.getElementById('editCustomerName').value,
+            emailAddress: document.getElementById('editCustomerEmail').value,
+            phoneNumber: document.getElementById('editCustomerPhone').value,
+            status: document.getElementById('editCustomerStatus').value
+        };
+        localStorage.setItem('customers', JSON.stringify(customers));
+    }
+
+    closeEditCustomerModal();
+
+    // Refresh the tables
+    if (typeof filterCustomers === 'function') filterCustomers();
+    if (typeof loadCustomers === 'function') loadCustomers();
+
+    showCustomModal({
+        title: 'Action Completed',
+        message: 'Customer updated successfully.',
+        type: 'success',
+        confirmText: 'OK'
+    });
+}
+
+function openEditRecordModal(id) {
+    const record = allAutomations.find(r => r.excelId === id);
+    if (!record) return;
+
+    document.getElementById('editRecordId').value = record.excelId;
+    document.getElementById('editRecordName').value = record.name;
+    document.getElementById('editRecordEmail').value = record.email;
+    document.getElementById('editRecordPhone').value = record.phone;
+    document.getElementById('editRecordTarget').value = record.targetCustomer;
+    document.getElementById('editRecordStatus').value = record.status;
+
+    const modal = document.getElementById('editRecordModal');
+    if (modal) {
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function closeEditRecordModal() {
+    const modal = document.getElementById('editRecordModal');
+    if (modal) {
+        modal.classList.add('hidden');
+        document.body.style.overflow = 'auto';
+    }
+}
+
+function saveRecordEdit(event) {
+    event.preventDefault();
+    const id = document.getElementById('editRecordId').value;
+    const index = allAutomations.findIndex(r => r.excelId === id);
+    if (index === -1) return;
+
+    allAutomations[index] = {
+        ...allAutomations[index],
+        name: document.getElementById('editRecordName').value,
+        email: document.getElementById('editRecordEmail').value,
+        phone: document.getElementById('editRecordPhone').value,
+        targetCustomer: document.getElementById('editRecordTarget').value,
+        status: document.getElementById('editRecordStatus').value
+    };
+
+    closeEditRecordModal();
+    updateAutomationFilters();
+    showCustomModal({
+        title: 'Action Completed',
+        message: 'Record updated successfully.',
+        type: 'success',
+        confirmText: 'OK'
+    });
+}
+
+function updateFileName(inputId, labelId) {
+    const input = document.getElementById(inputId);
+    const label = document.getElementById(labelId);
+    if (input.files.length > 0) {
+        label.textContent = input.files[0].name;
+        label.classList.add('text-primary', 'font-bold');
+    }
+}
+
+function handleImport() {
+    const docFile = document.getElementById('docUploadInput')?.files[0];
+    const excelFile = document.getElementById('excelUploadInput')?.files[0];
+
+    if (!docFile && !excelFile) {
+        showCustomModal({
+            title: 'No Files Selected',
+            message: 'Please select at least one file to upload.',
+            type: 'warning',
+            confirmText: 'OK'
+        });
+        return;
+    }
+
+    // Show loading state on Import button
+    const importBtn = event?.target || document.querySelector('#uploadModal button[onclick*="handleImport"]');
+    if (importBtn) {
+        importBtn.disabled = true;
+        importBtn.innerHTML = '<span class="material-symbols-outlined animate-spin">progress_activity</span> Uploading...';
+    }
+
+    // Simulate upload with progress
+    setTimeout(() => {
+        closeUploadModal();
+
+        // Reset button state
+        if (importBtn) {
+            importBtn.disabled = false;
+            importBtn.innerHTML = '<span class="material-symbols-outlined text-[20px]">upload</span> Import';
+        }
+
+        // Show success message with file details
+        let message = 'Files uploaded successfully!';
+        if (docFile && excelFile) {
+            message = `Uploaded: ${docFile.name} and ${excelFile.name}`;
+        } else if (docFile) {
+            message = `Uploaded: ${docFile.name}`;
+        } else if (excelFile) {
+            message = `Uploaded: ${excelFile.name}`;
+        }
+
+        showCustomModal({
+            title: 'Upload Complete',
+            message: message,
+            type: 'success',
+            confirmText: 'OK'
+        });
+
+        // If we have the customer/record ID, we could update their document count here
+        if (activeActionId) {
+            console.log(`Files uploaded for record: ${activeActionId}`);
+        }
+    }, 1500);
 }
 
 // Button Loading Wrapper
@@ -1117,8 +1710,13 @@ async function loadCustomers() {
     } else {
         customers.slice(0, 5).forEach(customer => {
             const firstLetter = customer.clientName ? customer.clientName.charAt(0).toUpperCase() : 'C';
-            const statusClass = customer.status === 'Active' ? 'badge-active' : customer.status === 'Pending' ? 'badge-pending' : 'badge-inactive';
-            const statusDot = customer.status === 'Active' ? 'bg-emerald-500' : customer.status === 'Pending' ? 'bg-amber-500' : 'bg-red-500';
+
+            // Normalize status - treat Suspended as Inactive
+            let displayStatus = customer.status;
+            if (displayStatus === 'Suspended') displayStatus = 'Inactive';
+
+            const statusClass = displayStatus === 'Active' ? 'badge-active' : displayStatus === 'Pending' ? 'badge-pending' : 'badge-inactive';
+            const statusDot = displayStatus === 'Active' ? 'bg-emerald-500' : displayStatus === 'Pending' ? 'bg-amber-500' : 'bg-red-500';
 
             const row = document.createElement('tr');
             row.className = 'hover:bg-blue-50/50 dark:hover:bg-blue-900/10 transition-colors group cursor-pointer';
@@ -1134,7 +1732,7 @@ async function loadCustomers() {
                 <td class="px-6 py-4 text-sm text-slate-400 font-medium">${customer.files || 0} File(s)</td>
                 <td class="px-6 py-4">
                     <span class="${statusClass} px-2.5 py-1 rounded-full text-[11px] font-bold inline-flex items-center">
-                        <span class="size-1.5 rounded-full ${statusDot} mr-1.5"></span> ${customer.status}
+                        <span class="size-1.5 rounded-full ${statusDot} mr-1.5"></span> ${displayStatus}
                     </span>
                 </td>
                 <td class="px-6 py-4 text-right">
@@ -1146,6 +1744,31 @@ async function loadCustomers() {
             tbody.appendChild(row);
         });
     }
+}
+
+// Function to load automations on dashboard
+async function loadDashboardAutomations() {
+    // Generate dummy data if not already present
+    if (allAutomations.length === 0) generateDummyData();
+
+    const tbody = document.getElementById('dashboardAutomationBody');
+    if (!tbody) return;
+
+    // Show Loading State
+    tbody.innerHTML = `
+        <tr class="animate-pulse">
+            <td class="px-6 py-4"><div class="skeleton-box w-16"></div></td>
+            <td class="px-6 py-4"><div class="skeleton-box w-24"></div></td>
+            <td class="px-6 py-4"><div class="skeleton-box w-32"></div></td>
+            <td class="px-6 py-4"><div class="skeleton-box w-20"></div></td>
+            <td class="px-6 py-4"><div class="skeleton-box w-16 h-6 rounded-full"></div></td>
+            <td class="px-6 py-4"><div class="skeleton-box w-8 ml-auto"></div></td>
+        </tr>
+    `;
+    await new Promise(resolve => setTimeout(resolve, 600));
+
+    // Render recent automations (max 6)
+    searchAutomationRecords();
 }
 
 // --- HELPER UI FUNCTIONS ---
@@ -1212,12 +1835,6 @@ function openQuickView(id) {
         </span>
     `).join('') || '<span class="text-xs text-slate-400">No documents found</span>';
 
-    // Edit Button
-    document.getElementById('qv-edit-btn').onclick = () => {
-        closeQuickView();
-        showToast(`Opening editor for ${id}...`);
-    };
-
     modal.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
 }
@@ -1227,6 +1844,51 @@ function closeQuickView() {
     if (modal) modal.classList.add('hidden');
     document.body.style.overflow = 'auto';
 }
+
+// Function to open Quick View for Automation records
+function openAutomationQuickView(excelId) {
+    const automation = allAutomations.find(a => a.excelId === excelId);
+
+    if (!automation) return;
+
+    const modal = document.getElementById('quickViewModal');
+    if (!modal) return;
+
+    // Fill Modal Data with automation info
+    const initials = (automation.name || 'AU').split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+    document.getElementById('qv-avatar').textContent = initials;
+    document.getElementById('qv-name').textContent = automation.name || '-';
+    document.getElementById('qv-id').textContent = `Excel ID: ${automation.excelId}`;
+    document.getElementById('qv-email').textContent = automation.email || '-';
+    document.getElementById('qv-phone').textContent = automation.phone || '-';
+    document.getElementById('qv-date').textContent = automation.uploadDate || '-';
+
+    // Status Badge
+    const status = automation.status || 'Pending';
+    const statusColor = status === 'Automated' ? 'text-emerald-500' : status === 'Pending' ? 'text-amber-500' : status === 'Failed' ? 'text-red-500' : 'text-slate-500';
+    document.getElementById('qv-status-container').innerHTML = `
+        <span class="glass-badge ${statusColor}">
+            <span class="size-2 rounded-full bg-current"></span> ${status}
+        </span>
+    `;
+
+    // Target Customer Tag
+    const targetTag = automation.targetCustomer || 'Standard';
+    let tagClass = 'bg-blue-50 text-blue-600 border-blue-200';
+    if (targetTag === 'High Value') tagClass = 'bg-emerald-50 text-emerald-600 border-emerald-200';
+    if (targetTag === 'Enterprise') tagClass = 'bg-purple-50 text-purple-600 border-purple-200';
+    if (targetTag === 'Mid-Market') tagClass = 'bg-amber-50 text-amber-600 border-amber-200';
+
+    document.getElementById('qv-docs-container').innerHTML = `
+        <span class="px-3 py-1 ${tagClass} text-xs font-bold rounded-lg border flex items-center gap-2">
+            <span class="material-symbols-outlined text-[14px]">label</span> ${targetTag}
+        </span>
+    `;
+
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
+
 // Function to delete customer
 function deleteCustomer(customerId) {
     openDeleteModal(customerId, 'customer');
@@ -1268,6 +1930,74 @@ function updateSelectAllCheckbox() {
         selectAllCheckbox.indeterminate = false;
     }
 }
+// --- EXPORT FUNCTIONALITY ---
+
+// User Session Management
+function initUserSession() {
+    const username = localStorage.getItem('loggedInUser');
+    const isLoginPage = window.location.pathname.includes('login.html');
+
+    // If no user is logged in and not on login page, redirect to login
+    if (!username && !isLoginPage) {
+        window.location.href = 'login.html';
+        return;
+    }
+
+    // If user is logged in and on login page, redirect to dashboard
+    if (username && isLoginPage) {
+        window.location.href = 'index.html';
+        return;
+    }
+
+    // Update avatar across the page
+    if (username && !isLoginPage) {
+        updateUserAvatar(username);
+    }
+}
+
+function updateUserAvatar(username) {
+    // Get first letter of username, uppercase
+    const initial = username.charAt(0).toUpperCase();
+
+    // Get full name for the avatar URL
+    const fullName = username.replace(/\s+/g, '+');
+
+    // Update all avatar elements on the page
+    const avatarElements = document.querySelectorAll('[data-user-avatar]');
+    avatarElements.forEach(element => {
+        // Check if it's an image-based avatar (has background-image style or bg-center class)
+        if (element.classList.contains('bg-center') || element.style.backgroundImage) {
+            // Image-based avatar using ui-avatars.com API
+            element.style.backgroundImage = `url("https://ui-avatars.com/api/?name=${encodeURIComponent(fullName)}&background=2563eb&color=fff")`;
+            // Ensure it has the proper classes
+            if (!element.classList.contains('bg-center')) {
+                element.classList.add('bg-center', 'bg-no-repeat', 'aspect-square', 'bg-cover', 'rounded-full', 'border-2', 'border-primary/20', 'shrink-0');
+            }
+        } else {
+            // Text-based avatar (simple initial display)
+            element.textContent = initial;
+            // Ensure it has the proper classes for text display
+            if (!element.classList.contains('flex')) {
+                element.className = 'size-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm';
+            }
+        }
+    });
+}
+
+function getUserInfo() {
+    return {
+        username: localStorage.getItem('loggedInUser') || 'User',
+        email: localStorage.getItem('userEmail') || '',
+        initial: (localStorage.getItem('loggedInUser') || 'U').charAt(0).toUpperCase()
+    };
+}
+
+function clearUserSession() {
+    localStorage.removeItem('loggedInUser');
+    localStorage.removeItem('userEmail');
+    localStorage.removeItem('loginTimestamp');
+}
+
 // --- EXPORT FUNCTIONALITY ---
 
 function exportCustomers(format = 'csv') {
@@ -1362,4 +2092,99 @@ function downloadFile(content, fileName, mimeType) {
         console.error('Export failed:', error);
         showToast('Error: Could not generate export file');
     }
+}
+
+// Generic Reusable Modal Component
+function showCustomModal(options) {
+    const {
+        title,
+        message,
+        type = 'success',
+        confirmText = 'OK',
+        cancelText = 'Cancel',
+        onConfirm = null,
+        onCancel = null
+    } = options;
+
+    let modal = document.getElementById('globalCustomModal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'globalCustomModal';
+        modal.className = 'premium-modal hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-[9999] flex items-center justify-center p-4';
+        document.body.appendChild(modal);
+    }
+
+    let iconHtml = '';
+    let confirmBtnClass = 'bg-primary hover:bg-primary/90 shadow-primary/20';
+
+    if (type === 'success') {
+        iconHtml = `<div class="size-12 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center shrink-0"><span class="material-symbols-outlined text-emerald-600 text-[28px]">check_circle</span></div>`;
+        confirmBtnClass = 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/20';
+    } else if (type === 'warning' || type === 'confirm' || type === 'delete') {
+        iconHtml = `<div class="size-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center shrink-0"><span class="material-symbols-outlined text-red-600 text-[28px]">warning</span></div>`;
+        if (type === 'delete') confirmBtnClass = 'bg-red-600 hover:bg-red-700 shadow-red-600/20';
+    } else if (type === 'info') {
+        iconHtml = `<div class="size-12 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center shrink-0"><span class="material-symbols-outlined text-blue-600 text-[28px]">info</span></div>`;
+    }
+
+    const showCancel = type === 'confirm' || type === 'delete' || type === 'warning' || onCancel;
+
+    modal.innerHTML = `
+        <div class="premium-modal-content bg-white dark:bg-slate-900 shadow-2xl max-w-md w-full border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden animate-slide-up">
+            <div class="p-6 border-b border-slate-200 dark:border-slate-800 flex items-start justify-between">
+                <div class="flex items-center gap-4">
+                    ${iconHtml}
+                    <div>
+                        <h3 class="text-xl font-bold text-slate-900 dark:text-white">${title}</h3>
+                        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">${message}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="flex items-center justify-end gap-3 p-6 bg-slate-50 dark:bg-slate-800/50">
+                ${showCancel ? `<button id="globalModalCancelBtn" class="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-semibold hover:bg-white dark:hover:bg-slate-800 transition-all">${cancelText}</button>` : ''}
+                <button id="globalModalConfirmBtn" class="px-6 py-2.5 rounded-xl text-white font-bold transition-all flex items-center gap-2 shadow-lg ${confirmBtnClass}">
+                    ${confirmText}
+                </button>
+            </div>
+        </div>
+    `;
+
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
+
+    const closeModal = () => {
+        modal.classList.add('hidden');
+        document.body.style.overflow = '';
+        document.documentElement.style.overflow = '';
+        document.removeEventListener('keydown', handleKeydown);
+    };
+
+    const handleKeydown = (e) => {
+        if (e.key === 'Escape') {
+            closeModal();
+            if (onCancel) onCancel();
+        }
+    };
+
+    document.addEventListener('keydown', handleKeydown);
+
+    if (showCancel) {
+        document.getElementById('globalModalCancelBtn').onclick = () => {
+            closeModal();
+            if (onCancel) onCancel();
+        };
+    }
+
+    document.getElementById('globalModalConfirmBtn').onclick = () => {
+        closeModal();
+        if (onConfirm) onConfirm();
+    };
+
+    modal.onclick = (e) => {
+        if (e.target === modal) {
+            closeModal();
+            if (onCancel) onCancel();
+        }
+    };
 }

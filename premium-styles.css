@@ -311,7 +311,7 @@ input[type="checkbox"]:checked {
     backdrop-filter: blur(24px) saturate(180%) !important;
     border: 1px solid rgba(226, 232, 240, 0.8) !important;
     border-radius: 12px !important;
-    box-shadow: 0 10px 40px rgba(15, 23, 42, 0.15) !important;
+    box-shadow: 0 10px 40px rgba(15, 23, 42, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.1) inset !important;
     padding: 6px !important;
     transform-origin: top right;
     display: none;
@@ -346,19 +346,38 @@ input[type="checkbox"]:checked {
     font-weight: 500 !important;
     color: #475569 !important;
     border-radius: 8px !important;
-    transition: all 0.2s !important;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
     cursor: pointer !important;
     background: transparent;
     border: none;
+    position: relative;
+    overflow: hidden;
 }
 
 .dark .dropdown-item {
     color: #94a3b8 !important;
 }
 
+.dropdown-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, transparent, rgba(37, 99, 235, 0.1), transparent);
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+}
+
+.dropdown-item:hover::before {
+    transform: translateX(100%);
+}
+
 .dropdown-item:hover {
     background: rgba(37, 99, 235, 0.08) !important;
     color: #2563eb !important;
+    transform: translateX(4px);
 }
 
 .dark .dropdown-item:hover {
@@ -369,10 +388,12 @@ input[type="checkbox"]:checked {
 .dropdown-item span {
     font-size: 18px !important;
     opacity: 0.7 !important;
+    transition: all 0.2s !important;
 }
 
 .dropdown-item:hover span {
     opacity: 1 !important;
+    transform: scale(1.1);
 }
 
 .dropdown-divider {
@@ -385,9 +406,18 @@ input[type="checkbox"]:checked {
     background: rgba(30, 41, 59, 0.6) !important;
 }
 
+.dropdown-item.text-red-500 {
+    color: #64748b !important;
+}
+
 .dropdown-item.text-red-500:hover {
     background: rgba(239, 68, 68, 0.1) !important;
     color: #ef4444 !important;
+}
+
+.dark .dropdown-item.text-red-500:hover {
+    background: rgba(239, 68, 68, 0.2) !important;
+    color: #f87171 !important;
 }
 
 /* Skeleton Loading Animation */
@@ -506,4 +536,355 @@ input[type="checkbox"]:checked {
     font-weight: 600;
     backdrop-filter: blur(4px);
     border: 1px solid currentColor;
+}
+
+/* Premium Select Box Styling */
+.premium-select {
+    appearance: none !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 0.75rem center !important;
+    background-size: 1rem !important;
+    padding-right: 2.25rem !important;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.premium-select:hover {
+    border-color: #2563eb !important;
+    transform: translateY(-1px);
+}
+
+.premium-select:focus {
+    border-color: #2563eb !important;
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1) !important;
+}
+
+.dark .premium-select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E") !important;
+}
+
+
+/* Material Symbols Icon Fix */
+.material-symbols-outlined {
+    font-family: 'Material Symbols Outlined';
+    font-weight: normal;
+    font-style: normal;
+    font-size: 24px;
+    line-height: 1;
+    letter-spacing: normal;
+    text-transform: none;
+    display: inline-block;
+    white-space: nowrap;
+    word-wrap: normal;
+    direction: ltr;
+    -webkit-font-feature-settings: 'liga';
+    -webkit-font-smoothing: antialiased;
+    font-feature-settings: 'liga';
+}
+
+/* Icon Size Utilities */
+.material-symbols-outlined.text-\[14px\] {
+    font-size: 14px !important;
+}
+
+.material-symbols-outlined.text-\[16px\] {
+    font-size: 16px !important;
+}
+
+.material-symbols-outlined.text-\[18px\] {
+    font-size: 18px !important;
+}
+
+.material-symbols-outlined.text-\[20px\] {
+    font-size: 20px !important;
+}
+
+.material-symbols-outlined.text-\[24px\] {
+    font-size: 24px !important;
+}
+
+.material-symbols-outlined.text-\[28px\] {
+    font-size: 28px !important;
+}
+
+.material-symbols-outlined.text-\[48px\] {
+    font-size: 48px !important;
+}
+
+
+/* Enhanced Modal Animations */
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes modalSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px) scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.premium-modal {
+    animation: modalFadeIn 0.3s ease-out;
+}
+
+.premium-modal-content {
+    animation: modalSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.animate-slide-up {
+    animation: modalSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Ensure modals are above dropdowns */
+.premium-modal.z-\[250\] {
+    z-index: 250 !important;
+}
+
+/* Upload Modal Specific Styles */
+.upload-zone {
+    position: relative;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 2px dashed rgba(203, 213, 225, 0.7);
+    background: rgba(248, 250, 252, 0.6);
+}
+
+.upload-zone:hover {
+    border-color: #2563eb;
+    background: rgba(37, 99, 235, 0.04);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.1);
+}
+
+.upload-zone.drag-over {
+    border-color: #2563eb;
+    background: rgba(37, 99, 235, 0.08);
+    transform: scale(1.02);
+}
+
+.upload-zone .material-symbols-outlined {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.upload-zone:hover .material-symbols-outlined {
+    transform: scale(1.1);
+    color: #2563eb;
+}
+
+/* File Selected State */
+.file-selected {
+    border-color: #059669 !important;
+    background: rgba(5, 150, 105, 0.05) !important;
+}
+
+.file-selected .material-symbols-outlined {
+    color: #059669 !important;
+}
+
+/* Modal max-height and scrolling */
+.premium-modal-content.max-h-\[85vh\] {
+    max-height: 85vh !important;
+}
+
+.premium-modal-content.overflow-y-auto {
+    overflow-y: auto !important;
+}
+
+/* Sticky header and footer in modal */
+.premium-modal-content .sticky {
+    position: sticky !important;
+    background: inherit;
+    z-index: 10;
+}
+
+/* Action Icon Enhancements */
+.action-icon {
+    position: relative;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.action-icon::after {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 8px;
+    background: rgba(37, 99, 235, 0.1);
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.action-icon:hover::after {
+    opacity: 1;
+}
+
+.action-icon:active {
+    transform: scale(0.9);
+}
+
+/* Button Ripple Effect */
+@keyframes ripple {
+    0% {
+        transform: scale(0);
+        opacity: 0.6;
+    }
+
+    100% {
+        transform: scale(2.5);
+        opacity: 0;
+    }
+}
+
+.btn-ripple {
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-ripple::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    pointer-events: none;
+}
+
+.btn-ripple:active::after {
+    animation: ripple 0.6s ease-out;
+}
+
+/* Modal Close Button Enhancement */
+.modal-close-btn {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.modal-close-btn:hover {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    transform: rotate(90deg);
+}
+
+/* Upload Progress Bar (for future enhancement) */
+.upload-progress {
+    height: 4px;
+    background: rgba(37, 99, 235, 0.1);
+    border-radius: 2px;
+    overflow: hidden;
+    position: relative;
+}
+
+.upload-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #2563eb, #3b82f6);
+    border-radius: 2px;
+    transition: width 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.upload-progress-bar::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+    0% {
+        transform: translateX(-100%);
+    }
+
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+/* Three-dot menu icon animation */
+.more-actions-btn {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.more-actions-btn:hover {
+    background: rgba(37, 99, 235, 0.1);
+    transform: scale(1.1);
+}
+
+.more-actions-btn:active {
+    transform: scale(0.95);
+}
+
+/* Smooth fade out animation */
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+    }
+
+    to {
+        opacity: 0;
+    }
+}
+
+.animate-fade-out {
+    animation: fadeOut 0.3s ease-out forwards;
+}
+
+/* Modal backdrop blur enhancement */
+.modal-backdrop-blur {
+    backdrop-filter: blur(8px) saturate(120%);
+    background: rgba(15, 23, 42, 0.5);
+}
+
+/* Success state animation */
+@keyframes successPulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    50% {
+        transform: scale(1.05);
+        opacity: 0.9;
+    }
+}
+
+.success-animation {
+    animation: successPulse 0.6s ease-in-out;
+}
+
+/* View All Links Animation */
+a[href*=".html"].inline-flex {
+    position: relative;
+}
+
+a[href*=".html"].inline-flex .material-symbols-outlined {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+a[href*=".html"].inline-flex:hover .material-symbols-outlined {
+    transform: translateX(4px);
+}
+
+a[href*=".html"].inline-flex:active {
+    transform: scale(0.98);
 }
